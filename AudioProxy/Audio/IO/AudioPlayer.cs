@@ -15,10 +15,11 @@ namespace AudioProxy.Audio
         private readonly MixingSampleProvider Mixer;
         private readonly ConcurrentDictionary<InputDevice, BufferedWaveProvider> InputBuffers;
         private readonly WaveFormat WaveFormat;
+        private readonly KeyboardHookService KeyboardHookService;
 
         public readonly OutputDevice Device;
 
-        public AudioPlayer(OutputDevice device, int sampleRate, int channelCount, int delay)
+        public AudioPlayer(OutputDevice device, int sampleRate, int channelCount, int delay, KeyboardHookService keyboardHookService)
         {
             Device = device;
             WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount);
@@ -33,6 +34,7 @@ namespace AudioProxy.Audio
             };
 
             InputBuffers = new ConcurrentDictionary<InputDevice, BufferedWaveProvider>();
+            KeyboardHookService = keyboardHookService;
         }
 
         public void Start()
@@ -66,7 +68,7 @@ namespace AudioProxy.Audio
 
         public void PlayAudio(IAudioStream audioStream)
         {
-            var sampleProvider = new AudioStreamSampleProvider(audioStream, WaveFormat);
+            var sampleProvider = new AudioStreamSampleProvider(audioStream, WaveFormat, Device.SoundsMode, KeyboardHookService);
             AddMixerInput(sampleProvider);
         }
         public void PlayAudio(InputDevice inputDevice, byte[] buffer, int bytesRecorded)

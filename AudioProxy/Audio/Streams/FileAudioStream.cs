@@ -39,22 +39,7 @@ namespace AudioProxy.Audio
 
         public int Read(float[] buffer, int offset, int count, int position)
         {
-            if (position < BufferPosition)
-            {
-                throw new InvalidOperationException("Tried to read Audio Samples that already left the FileAudioStream! Is a AudioPlayer lacking behind?");
-            }
-
-            int endPosition = position + offset + count;
-            lock (AudioReader)
-            {
-                if (!IsCached(endPosition) && !Finished)
-                {
-                    MoveForward();
-                }
-            }
-
-
-            int samplesCopied = Math.Min(count, BufferEnd - position);
+            int samplesCopied = Advance(count, position);
             Array.Copy(Buffer, position - BufferPosition, buffer, offset, samplesCopied);
 
             if (samplesCopied < count)
@@ -64,6 +49,25 @@ namespace AudioProxy.Audio
 
             return samplesCopied;
         }
+        public int Advance(int count, int position)
+        {
+            if (position < BufferPosition)
+            {
+                throw new InvalidOperationException("Tried to read Audio Samples that already left the FileAudioStream! Is a AudioPlayer lacking behind?");
+            }
+
+            int endPosition = position + count;
+            lock (AudioReader)
+            {
+                if (!Finished && !IsCached(endPosition))
+                {
+                    MoveForward();
+                }
+            }
+
+            return Math.Min(count, BufferEnd - position);
+        }
+
 
         private void MoveForward()
         {
@@ -98,7 +102,6 @@ namespace AudioProxy.Audio
                 Disposed = true;
             }
 
-            Buffer = null;
             AudioReader.Dispose();
         }
     }

@@ -64,14 +64,8 @@ namespace AudioProxy.Services
 
         public Keys[] GetPressedKeys()
             => PressedKeys.Where(x => x.Value)
-                .Select(x => (Keys) x.Key)
+                .Select(x => x.Key)
                 .ToArray();
-
-        public bool AreKeysPressed(Keys[] keys)
-        {
-            var pressedKeys = GetPressedKeys();
-            return keys.All(x => pressedKeys.Contains(x));
-        }
 
         protected override ValueTask RunAsync()
         {

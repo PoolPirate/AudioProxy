@@ -56,11 +56,6 @@ namespace AudioProxy.Services
             {
                 foreach (var player in Players)
                 {
-                    if (!player.Device.SoundsMode.IsFulfilled(KeyboardHookService.GetPressedKeys()))
-                    {
-                        continue;
-                    }
-
                     player.PlayAudio(audioStream);
                 }
             }
@@ -78,7 +73,7 @@ namespace AudioProxy.Services
 
         public void AddDevice(OutputDevice outputDevice)
         {
-            var player = new AudioPlayer(outputDevice, AudioOptions.SampleRate, AudioOptions.ChannelCount, AudioOptions.OutputDelay);
+            var player = new AudioPlayer(outputDevice, AudioOptions.SampleRate, AudioOptions.ChannelCount, AudioOptions.OutputDelay, KeyboardHookService);
             lock (Players)
             {
                 Players.Add(player);
