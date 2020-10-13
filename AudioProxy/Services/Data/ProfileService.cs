@@ -117,27 +117,12 @@ namespace AudioProxy.Services
 
         public bool TryGetPressedProfileSounds(Keys[] pressedKeys, out ProfileSound[] profileSounds)
         {
-            var pressedProfileSounds = new List<ProfileSound>();
+            profileSounds = (CurrentProfile?.Sounds?.ToArray() ?? Array.Empty<ProfileSound>())
+                .Where(x => x.Keys.Length == pressedKeys.Length)
+                .Where(x => pressedKeys.All(z => x.Keys.Contains(z)))
+                .ToArray();
 
-            lock (ProfileOptions)
-            {
-                foreach(var profile in ProfileOptions)
-                {
-                    foreach(var profileSound in profile.Sounds)
-                    {
-                        if (pressedKeys.Length != profileSound.Keys.Length ||
-                            !pressedKeys.All(x => profileSound.Keys.Contains(x)))
-                        {
-                            continue;
-                        }
-
-                        pressedProfileSounds.Add(profileSound);
-                    }
-                }
-            }
-
-            profileSounds = pressedProfileSounds.ToArray();
-            return pressedProfileSounds.Count != 0;
+            return profileSounds.Length != 0;
         }
     }
 }
