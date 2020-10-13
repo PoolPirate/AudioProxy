@@ -1,0 +1,8 @@
+﻿div{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.center {
+    justify-content: center;
+}

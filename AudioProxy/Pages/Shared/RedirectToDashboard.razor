@@ -1,0 +1,9 @@
+﻿@namespace AudioProxy.Pages
+@inject NavigationManager NavigationManager 
+
+@code{ 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        NavigationManager.NavigateTo($"{NavigationManager.BaseUri}Dashboard");
+    }
+}

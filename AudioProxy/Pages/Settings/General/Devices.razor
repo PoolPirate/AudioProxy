@@ -1,0 +1,294 @@
+﻿@namespace AudioProxy.Pages
+@page "/Settings/Devices"
+@layout SettingsLayout
+@inject DeviceService DeviceService
+@inject ConfigService ConfigService
+@implements IDisposable
+
+<Panel>
+    <PanelHeading>
+        Output
+    </PanelHeading>
+
+    <table>
+        <tr>
+            <th>Device Id</th>
+            <th>Sound Activation Mode</th>
+            <th>Input Activation Mode</th>
+            <th></th>
+        </tr>
+        @foreach (var outputDevice in DeviceService.GetAllOutputDevices())
+        {
+            <tr>
+                <td>@outputDevice.Name</td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == outputDevice.SoundsMode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(outputDevice.SoundsMode, outputDevice: outputDevice)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+
+                </td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == outputDevice.InputsMode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(outputDevice.InputsMode, outputDevice: outputDevice)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                </td>
+                <td>
+                    <button class="imgbtn" @onclick="() =>
+                                                     {
+                                                         if (EditingDeviceMode == outputDevice.SoundsMode || EditingDeviceMode == outputDevice.InputsMode)
+                                                         {
+                                                             EditingDeviceMode = null;
+                                                         }
+                                                         DeviceService.DeleteOutputDevice(outputDevice);
+                                                     }">
+                        <img src="/ico/delete.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        @if (DeviceService.GetAllOutputDevices().Count() < 5)
+        {
+            bool isFirstOption = false;
+            <tr>
+                <td>
+                    <select @oninput="e => CreatingOutputDevice.Name = e.Value.ToString()">
+
+                        @foreach (var device in AudioProxy.Helpers.AudioDeviceHelper.GetAllOutputDevices())
+                        {
+                            if (isFirstOption)
+                            {
+                                <option selected="selected">@device.ProductName</option>
+                            }
+                            else
+                            {
+                                <option>@device.ProductName</option>
+                            }
+
+                        }
+                    </select>
+                </td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingOutputDevice.SoundsMode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(CreatingOutputDevice.SoundsMode)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                </td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingOutputDevice.InputsMode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(CreatingOutputDevice.InputsMode)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                </td>
+                <td>
+                    <button class="imgbtn" @onclick="() =>
+                                                     {
+                                                        DeviceService.CreateOutputDevice(CreatingOutputDevice.Name, CreatingOutputDevice.SoundsMode, CreatingOutputDevice.InputsMode);
+                                                        CreatingOutputDevice = new OutputDevice();
+                                                     }">
+                        <img src="/ico/add.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td>You cannot have more than 5 outputs!</td>
+            </tr>
+        }
+
+    </table>
+</Panel>
+<Panel>
+    <PanelHeading>
+        Input
+    </PanelHeading>
+
+    <table>
+        <tr>
+            <th>Device Name</th>
+            <th>Activation Mode</th>
+            <th></th>
+        </tr>
+        @foreach (var inputDevice in DeviceService.GetAllInputDevices())
+        {
+            <tr>
+                <td>@inputDevice.Name</td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == inputDevice.Mode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(inputDevice.Mode, inputDevice: inputDevice)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                </td>
+                <td>
+                    <button class="imgbtn" @onclick="() =>
+                                                     {
+                                                         if (EditingDeviceMode == inputDevice.Mode)
+                                                         {
+                                                             EditingDeviceMode = null;
+                                                         }
+                                                         DeviceService.DeleteInputDevice(inputDevice);
+                                                     }">
+                        <img src="/ico/delete.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        @if (DeviceService.GetAllInputDevices().Count() < 5)
+        {
+            bool isFirstOption = false;
+            <tr>
+                <td>
+                    <select @oninput="e => CreatingInputDevice.Name = e.Value.ToString()">
+
+                        @foreach (var device in AudioProxy.Helpers.AudioDeviceHelper.GetAllInputDevices())
+                        {
+                            if (isFirstOption)
+                            {
+                                <option selected="selected">@device.ProductName</option>
+                            }
+                            else
+                            {
+                                <option>@device.ProductName</option>
+                            }
+
+                        }
+                    </select>
+                </td>
+                <td>
+                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingInputDevice.Mode)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditDeviceMode(CreatingInputDevice.Mode)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                </td>
+                <td>
+                    <button class="imgbtn"
+                            @onclick="() =>
+                            {
+                                DeviceService.CreateInputDevice(CreatingInputDevice.Name, CreatingInputDevice.Mode);
+                                CreatingInputDevice = new InputDevice();
+                            }">
+                        <img src="/ico/add.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td>You cannot have more than 5 inputs!</td>
+            </tr>
+        }
+
+    </table>
+</Panel>
+@if (EditingDeviceMode != null)
+{
+    <Panel>
+        <PanelHeading>
+            Edit Activation Mode
+        </PanelHeading>
+        <table>
+            <tr>
+                <th>Activation</th>
+                @if (EditingDeviceMode.TransferMode == TransferMode.PushToMute || EditingDeviceMode.TransferMode == TransferMode.PushToTalk)
+                {
+                    <th>Hotkey</th>
+                }
+            </tr>
+            <tr>
+                <td>
+                    <TransferModeSelector Mode="EditingDeviceMode.TransferMode"
+                                          ModeChanged="mode => UpdateDeviceMode(x => x.TransferMode = mode)" />
+                </td>
+                <td>
+                    @if (EditingDeviceMode.TransferMode == TransferMode.PushToMute || EditingDeviceMode.TransferMode == TransferMode.PushToTalk)
+                    {
+                        <KeySelector Keys="EditingDeviceMode.Keys.ToList()"
+                                     KeyCodesChanged="keys => UpdateDeviceMode(x => x.Keys = keys)" />
+                    }
+                </td>
+            </tr>
+        </table>
+    </Panel>
+}
+
+
+@code{
+    private OutputDevice CreatingOutputDevice = new OutputDevice();
+    private InputDevice CreatingInputDevice = new InputDevice();
+    private OutputDevice EditingOutputDevice;
+    private InputDevice EditingInputDevice;
+    private DeviceMode EditingDeviceMode;
+
+    private void EditDeviceMode(DeviceMode deviceMode, OutputDevice outputDevice = null, InputDevice inputDevice = null)
+    {
+        if (deviceMode == EditingDeviceMode)
+        {
+            EditingDeviceMode = null;
+            return;
+        }
+        EditingOutputDevice = outputDevice;
+        EditingInputDevice = inputDevice;
+        EditingDeviceMode = deviceMode;
+    }
+    private void UpdateDeviceMode(Action<DeviceMode> changeDelegate)
+    {
+        if (EditingOutputDevice != null)
+        {
+            if (EditingDeviceMode == EditingOutputDevice.SoundsMode)
+            {
+                DeviceService.UpdateOutputDevice(EditingOutputDevice, x => changeDelegate.Invoke(x.SoundsMode));
+            }
+            else
+            {
+                DeviceService.UpdateOutputDevice(EditingOutputDevice, x => changeDelegate.Invoke(x.InputsMode));
+            }
+        }
+        else if (EditingInputDevice != null)
+        {
+            DeviceService.UpdateInputDevice(EditingInputDevice, x => changeDelegate.Invoke(x.Mode));
+        }
+        else
+        {
+            changeDelegate(EditingDeviceMode);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        DeviceService.OnDevicesChanged += CallStateUpdateAsync;
+    }
+    public void Dispose()
+    {
+        DeviceService.OnDevicesChanged -= CallStateUpdateAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

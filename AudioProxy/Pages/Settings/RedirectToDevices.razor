@@ -1,0 +1,11 @@
+﻿@namespace AudioProxy.Pages
+@page "/Settings"
+@inject NavigationManager NavManager
+
+@code{ 
+    
+    protected override void OnAfterRender(bool firstRender) 
+    {
+        NavManager.NavigateTo("/Settings/Devices");
+    }
+}

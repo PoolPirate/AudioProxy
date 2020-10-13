@@ -1,0 +1,31 @@
+﻿.profileblock {
+    background-color: #20639B;
+}
+.soundblock {
+    background-color: #ED553B;
+}
+
+.active{
+    background-color: #3CAEA3;
+}
+
+.block {
+    display: inline-flex;
+    width: 120px;
+    height: 120px;
+    margin: 10px;
+    padding: 5px;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+    word-wrap: hyphenate;
+    cursor: pointer;
+    position: relative;
+    justify-content: center;
+    text-align: center;
+}
+
+b{
+    position: absolute;
+    bottom: 0px;
+}

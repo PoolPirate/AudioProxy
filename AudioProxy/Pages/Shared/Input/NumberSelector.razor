@@ -1,0 +1,23 @@
+﻿@namespace AudioProxy.Pages
+
+<input value="@Value" @oninput="HandleInput" type="number" min="@Min" max="@Max" />
+
+@code {
+    [Parameter]
+    public int Min { get; set; }
+
+    [Parameter]
+    public int Max { get; set; }
+
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = int.Parse(e.Value.ToString());
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

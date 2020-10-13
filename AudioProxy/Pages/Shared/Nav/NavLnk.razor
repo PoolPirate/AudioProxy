@@ -1,0 +1,27 @@
+﻿@namespace AudioProxy.Pages
+
+<li class="@LiClass">
+    <NavLink class="@AClass" Match="@Match" href="@HRef" ActiveClass="@ActiveClass">
+        @ChildContent
+    </NavLink>
+</li>
+
+@code{
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.All;
+
+    [Parameter]
+    public string HRef { get; set; } = "/";
+
+    [Parameter]
+    public string LiClass { get; set; } = "navli";
+
+    [Parameter]
+    public string AClass { get; set; } = "nava";
+
+    [Parameter]
+    public string ActiveClass { get; set; } = "active";
+}

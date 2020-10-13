@@ -1,0 +1,27 @@
+﻿table {
+    width: 100%;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+    color: #b7afa2;
+}
+
+input {
+    background-color: rgb(10, 12, 12);
+    font-size: 14px;
+    color: #b7afa2;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    outline: none;
+    text-align: center;
+}
+
+.True {
+    border-color: darkred;
+}
+
+.False {
+    border-color: green;
+}

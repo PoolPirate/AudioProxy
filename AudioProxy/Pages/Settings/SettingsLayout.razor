@@ -1,0 +1,53 @@
+﻿@namespace AudioProxy.Pages
+@inherits LayoutComponentBase
+
+<nav class="navpanelsarea">
+    <Panel Class="pagespanel">
+        <PanelHeading>
+            Pages
+        </PanelHeading>
+        <NavBox>
+            <NavLnk HRef="/Dashboard" Match="NavLinkMatch.Prefix">
+                Dashboard
+            </NavLnk>
+            <NavLnk HRef="/Settings" Match="NavLinkMatch.Prefix">
+                Settings
+            </NavLnk>
+            <NavLnk HRef="/About" Match="NavLinkMatch.Prefix">
+                About
+            </NavLnk>
+        </NavBox>
+    </Panel>
+    <Panel Class="pagespanel">
+        <PanelHeading>
+            Settings
+        </PanelHeading>
+        <NavBox>
+            <NavLnk HRef="/Settings/Devices">
+                Devices
+            </NavLnk>
+            <NavLnk HRef="/Settings/Sounds">
+                Sounds
+            </NavLnk>
+            <NavLnk HRef="/Settings/Profiles">
+                Profiles
+            </NavLnk>
+            <NavLnk HRef="/Settings/Hotkeys">
+                Hotkeys
+            </NavLnk>
+        </NavBox>
+    </Panel>
+    @*<Panel Class="pagespanel">
+        <PanelHeading>
+            Advanced Settings
+        </PanelHeading>
+        <NavBox>
+            <NavLnk HRef="/Settings/Audio">
+                Audio & Quality
+            </NavLnk>
+        </NavBox>
+    </Panel>*@
+</nav>
+<div class="rightpanelarea">
+    @Body
+</div>

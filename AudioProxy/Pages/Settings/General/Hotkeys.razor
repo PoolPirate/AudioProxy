@@ -1,0 +1,81 @@
+﻿@namespace AudioProxy.Pages
+@page "/Settings/Hotkeys"
+@layout SettingsLayout
+@implements IDisposable
+@inject HotkeyService HotkeyService
+
+<Panel>
+    <PanelHeading>
+        Profile
+    </PanelHeading>
+    <table>
+        <tr>
+            <td>
+                <b>Select Last Profile</b>
+            </td>
+            <td>
+                <KeySelector Keys="HotkeyService.GetHotkeyKeys(Hotkey.Last).ToList()"
+                             KeyCodesChanged="keyCodes => HotkeyService.UpdateHotkey(Hotkey.Last, keyCodes)" />
+            </td>
+            <td>
+                <b>Select Next Profile</b>
+            </td>
+            <td>
+                <KeySelector Keys="HotkeyService.GetHotkeyKeys(Hotkey.Next).ToList()"
+                             KeyCodesChanged="keyCodes => HotkeyService.UpdateHotkey(Hotkey.Next, keyCodes)" />
+            </td>
+        </tr>
+        @*<tr>
+            <td>
+                <b>Down</b>
+            </td>
+            <td>
+                <KeySelector Keys="HotkeyService.GetHotkeyKeys(Hotkey.Down).ToList()"
+                             KeyCodesChanged="keyCodes => HotkeyService.UpdateHotkey(Hotkey.Down, keyCodes)" />
+            </td>
+            <td>
+                <b>Up</b>
+            </td>
+            <td>
+                <KeySelector Keys="HotkeyService.GetHotkeyKeys(Hotkey.Up).ToList()"
+                             KeyCodesChanged="keyCodes => HotkeyService.UpdateHotkey(Hotkey.Up, keyCodes)" />
+            </td>
+        </tr>*@
+    </table>
+</Panel>
+<Panel>
+    <PanelHeading>
+        Sounds & Audio
+    </PanelHeading>
+    <table>
+        <tr>
+            <td>
+                <b>Stop All Sounds</b>
+            </td>
+            <td>
+                <KeySelector Keys="HotkeyService.GetHotkeyKeys(Hotkey.Stop).ToList()"
+                             KeyCodesChanged="keyCodes => HotkeyService.UpdateHotkey(Hotkey.Stop, keyCodes)" />
+            </td>
+        </tr>
+    </table>
+</Panel>
+
+@code {
+    protected override void OnInitialized()
+    {
+        HotkeyService.OnHotkeysChanged += CallStateUpdateAsync;
+    }
+
+    public void Dispose()
+    {
+        HotkeyService.OnHotkeysChanged -= CallStateUpdateAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

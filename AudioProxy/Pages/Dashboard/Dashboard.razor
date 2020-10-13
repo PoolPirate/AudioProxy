@@ -1,0 +1,69 @@
+﻿@namespace AudioProxy.Pages
+@page "/Dashboard"
+@layout DashboardLayout
+@implements IDisposable
+@inject ProfileService ProfileService
+@inject SoundService SoundService
+@inject AudioOutputService AudioOutputService
+
+<Panel>
+    <PanelHeading>
+        Profiles
+    </PanelHeading>
+    @foreach (var profile in ProfileService.GetAllProfiles())
+    {
+        <div class="block profileblock @(profile == ProfileService.CurrentProfile ? "active" : "")"
+             @onclick="() => ProfileService.SelectProfile(profile.Id)">
+            @profile.Name
+
+            @if (profile.Sounds.Count != 1)
+            {
+                <b>@profile.Sounds.Count Sounds</b>
+            }
+            else
+            {
+                <b>@profile.Sounds.Count Sound</b>
+            }
+        </div>
+    }
+</Panel>
+@if (ProfileService.CurrentProfile != null)
+{
+    <Panel>
+        <PanelHeading>
+            Sounds
+        </PanelHeading>
+        @foreach (var profileSound in ProfileService.CurrentProfile.Sounds)
+        {
+            <div class="block soundblock"
+                 @onclick="() => AudioOutputService.PlaySoundAsync(profileSound.SoundId)">
+                @SoundService.GetSoundById(profileSound.SoundId).Name
+            </div>
+        }
+
+    </Panel>
+}
+
+@code{
+    protected override void OnInitialized()
+    {
+        ProfileService.OnSwitchedProfile += CallStateUpdateAsync;
+        ProfileService.OnProfilesChanged += CallStateUpdateAsync;
+        SoundService.OnSoundsChanged += CallStateUpdateAsync;
+    }
+
+    public void Dispose()
+    {
+        ProfileService.OnSwitchedProfile -= CallStateUpdateAsync;
+        ProfileService.OnProfilesChanged -= CallStateUpdateAsync;
+        SoundService.OnSoundsChanged -= CallStateUpdateAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

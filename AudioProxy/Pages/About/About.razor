@@ -1,0 +1,11 @@
+﻿@namespace AudioProxy.Pages
+@page "/About"
+@inject NavigationManager NavManager
+
+@code{
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        NavManager.NavigateTo("/About/Readme");
+    }
+}

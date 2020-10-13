@@ -1,0 +1,20 @@
+﻿div{
+    display: flex;
+    border-color: black;
+    border-radius: 8px;
+    margin: 5px;
+    padding: 4px;
+}
+
+.centerX{
+    align-items: center;
+    text-align: center;
+}
+
+.centerY{
+    justify-content: center;
+}
+
+.spaceY{
+    justify-content: space-around;
+}

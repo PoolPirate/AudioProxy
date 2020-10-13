@@ -1,0 +1,198 @@
+﻿@namespace AudioProxy.Pages
+@page "/Settings/Profiles"
+@layout SettingsLayout
+@implements IDisposable
+@inject ProfileService ProfileService
+@inject AudioOutputService AudioOutputService
+@inject SoundService SoundService
+
+<Panel>
+    <PanelHeading>
+        Profiles
+    </PanelHeading>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Sounds</th>
+            <th></th>
+        </tr>
+        @foreach (var profile in ProfileService.GetAllProfiles())
+        {
+            <tr>
+                <td>
+                    <input class="@NameErrorDict.GetValueOrDefault(profile).ToString()" maxlength="20" type="text" value="@profile.Name"
+                           @oninput="e => TryChangeName(profile, e.Value.ToString())" />
+                </td>
+                <td>@profile.Sounds.Count</td>
+                <td>
+                    @if (EditingProfile == null || EditingProfile == profile)
+                    {
+                        <button class="imgbtn"
+                                @onclick="() => EditProfile(profile)">
+                            <img src="/ico/edit.png" height="22" />
+                        </button>
+                    }
+                    <button class="imgbtn" @onclick="() =>
+                                           {
+                                               if (EditingProfile == profile)
+                                               {
+                                                 EditingProfile = null;
+                                               }
+                                               ProfileService.DeleteProfile(profile);
+                                           }">
+                        <img src="/ico/delete.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td>
+                <input class="@NameErrorDict.GetValueOrDefault(CreatingProfile).ToString()" maxlength="20" type="text" value="@CreatingProfile.Name"
+                       @oninput="e => TryChangeName(CreatingProfile, e.Value.ToString(), true)" />
+            </td>
+            <td>0</td>
+            <td>
+                <button class="imgbtn"
+                        @onclick="TryCreateProfile">
+                    <img src="/ico/add.png" height="22" />
+                </button>
+            </td>
+        </tr>
+    </table>
+</Panel>
+@if (EditingProfile != null)
+{
+    <Panel>
+        <PanelHeading>
+            Profile Sounds
+        </PanelHeading>
+
+        <table>
+            <tr>
+                <th>Sound</th>
+                <th>Hotkey</th>
+                <th></th>
+            </tr>
+            @foreach (var profileSound in EditingProfile.Sounds)
+            {
+                <tr>
+                    <td>
+                        <SoundSelector Selected="profileSound.SoundId"
+                                       SelectedChanged="soundId => UpdateProfileSound(profileSound, x => x.SoundId = soundId)">
+
+                        </SoundSelector>
+                    </td>
+                    <td>
+                        <KeySelector Keys="profileSound.Keys.ToList()"
+                                     KeyCodesChanged="keys => UpdateProfileSound(profileSound, x => x.Keys = keys)" />
+                    </td>
+                    <td>
+                        <button class="imgbtn" @onclick="() => AudioOutputService.PlaySoundAsync(profileSound.SoundId)">
+                            <img src="/ico/play.png" height="22" />
+                        </button>
+                        <button class="imgbtn" @onclick="() => ProfileService.UpdateProfile(EditingProfile, x => x.Sounds.Remove(profileSound))">
+                            <img src="/ico/delete.png" height="22" />
+                        </button>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td>
+                    <SoundSelector Selected="CreatingProfileSound.SoundId" 
+                                   SelectedChanged="soundId => UpdateProfileSound(CreatingProfileSound, x => x.SoundId = soundId)" />
+                </td>
+                <td>
+                    <KeySelector Keys="CreatingProfileSound.Keys.ToList()"
+                                 KeyCodesChanged="keys => UpdateProfileSound(CreatingProfileSound, x => x.Keys = keys)" />
+                </td>
+                <td>
+                    <button class="imgbtn"
+                            @onclick="() => TryCreateProfileSound()">
+                        <img src="/ico/add.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </Panel>
+}
+
+@code{
+    private Profile CreatingProfile = new Profile();
+    private Dictionary<Profile, bool> NameErrorDict = new Dictionary<Profile, bool>();
+    private Profile EditingProfile;
+    private ProfileSound CreatingProfileSound = new ProfileSound();
+
+    private void EditProfile(Profile profile)
+    {
+        if (profile == EditingProfile)
+        {
+            EditingProfile = null;
+            return;
+        }
+        EditingProfile = profile;
+    }
+
+    private void TryCreateProfile()
+    {
+        if (!CheckProfileName(CreatingProfile.Name))
+        {
+            return;
+        }
+
+        ProfileService.CreateProfile(CreatingProfile.Name);
+        CreatingProfile.Name = "";
+        NameErrorDict[CreatingProfile] = true;
+    }
+    private void TryCreateProfileSound()
+    {
+        ProfileService.UpdateProfile(EditingProfile, x => x.Sounds.Add(CreatingProfileSound));
+        CreatingProfileSound = new ProfileSound();
+    }
+
+    private void UpdateProfileSound(ProfileSound profileSound, Action<ProfileSound> changeDelegate)
+    {
+        if (profileSound == CreatingProfileSound)
+        {
+            changeDelegate.Invoke(profileSound);
+            return;
+        }
+
+        ProfileService.UpdateProfile(EditingProfile, profile => changeDelegate.Invoke(profileSound));
+    }
+
+    private void TryChangeName(Profile profile, string newName, bool ignoreError = false)
+    {
+        if (!NameErrorDict.AddOrSet(profile, !CheckProfileName(newName)) || ignoreError)
+        {
+            ProfileService.UpdateProfile(profile, x => x.Name = newName);
+            if (!ignoreError)
+            {
+                return;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private bool CheckProfileName(string name)
+        => !string.IsNullOrWhiteSpace(name);
+
+    protected override void OnInitialized()
+    {
+        NameErrorDict.TryAdd(CreatingProfile, true);
+        ProfileService.OnProfilesChanged += CallStateUpdateAsync;
+    }
+
+    public void Dispose()
+    {
+        ProfileService.OnProfilesChanged -= CallStateUpdateAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

@@ -1,0 +1,65 @@
+﻿#blazor-error-ui{
+    display: none;
+}
+
+body {
+    background-color: #0a0c0c;
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.imgbtn {
+    outline: none;
+    background-color: transparent;
+    border: none;
+}
+
+@media(min-width: 800px) {
+    .navpanelsarea {
+        width: 250px;
+        margin: 10px;
+        display: inline-block;
+    }
+
+    .rightpanelarea {
+        width: calc(100vw - 300px);
+        margin: 10px;
+        margin-left: 0px;
+        display: inline-block;
+        float: right;
+    }
+}
+
+@media(max-width: 799px) {
+    .navpanelsarea {
+        width: 93%;
+        margin: auto;
+    }
+
+    .rightpanelarea {
+        width: 93%;
+        margin: auto;
+    }
+}
+
+.errorlabel{
+    color: darkred;
+}
+
+.hide{
+    display: none;
+}
+.profilebox {
+    height: 120px;
+    background-color: pink;
+}
+
+.flexcolumn {
+    flex-direction: column;
+}
+.flexrow{
+    flex-direction: row;
+}

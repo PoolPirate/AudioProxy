@@ -1,0 +1,24 @@
+﻿@namespace AudioProxy.Pages
+@inherits LayoutComponentBase
+
+<nav class="navpanelsarea">
+    <Panel Class="pagespanel">
+        <PanelHeading>
+            Pages
+        </PanelHeading>
+        <NavBox>
+            <NavLnk HRef="/Dashboard" Match="NavLinkMatch.Prefix">
+                Dashboard
+            </NavLnk>
+            <NavLnk HRef="/Settings" Match="NavLinkMatch.Prefix">
+                Settings
+            </NavLnk>
+            <NavLnk HRef="/About" Match="NavLinkMatch.Prefix">
+                About
+            </NavLnk>
+        </NavBox>
+    </Panel>
+</nav>
+<div class="rightpanelarea">
+    @Body
+</div>

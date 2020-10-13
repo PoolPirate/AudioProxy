@@ -1,0 +1,31 @@
+﻿@namespace AudioProxy.Pages
+
+<select @oninput="HandleInputAsync">
+    @foreach (var mode in Modes)
+    {
+        if (Mode == mode)
+        {
+            <option selected>@mode</option>
+        }
+        else
+        {
+            <option>@mode</option>
+        }
+    }
+</select>
+
+@code{
+    private TransferMode[] Modes { get; set; } = Enum.GetValues<TransferMode>();
+
+    [Parameter]
+    public TransferMode Mode { get; set; } = TransferMode.Always;
+
+    [Parameter]
+    public EventCallback<TransferMode> ModeChanged { get; set; }
+
+    private Task HandleInputAsync(ChangeEventArgs e)
+    {
+        Mode = Enum.Parse<TransferMode>(e.Value.ToString());
+        return ModeChanged.InvokeAsync(Mode);
+    }
+}

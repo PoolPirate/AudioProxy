@@ -1,0 +1,117 @@
+﻿@namespace AudioProxy.Pages
+@inject KeyboardHookService KeyboardHookService
+@implements IDisposable
+
+<button class="openbtn @Class" @onclick="Show">
+    @foreach (Keys key in Keys)
+    {
+        <p class="nospacing">@key</p>
+    }
+    @if (Keys.Count == 0)
+    {
+        <p class="nospacing">Unset</p>
+    }
+</button>
+
+<div class="@(OverlayVisible ? "flex" : "hide")">
+
+    @foreach (Keys key in Keys)
+    {
+        <p>@key</p>
+    }
+    @if (!CatchInputs)
+    {
+        <div>
+            <button class="ctrlbtn" @onclick="EnableInputs">
+                Again
+            </button>
+            <button class="ctrlbtn" @onclick="Clear">
+                Reset
+            </button>
+            <button class="ctrlbtn" @onclick="Close">
+                Done
+            </button>
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter]
+    public string Class { get; set; }
+
+    [Parameter]
+    public List<Keys> Keys { get; set; } = new List<Keys>();
+
+    [Parameter]
+    public EventCallback<Keys[]> KeyCodesChanged { get; set; }
+
+    private bool OverlayVisible = false;
+    private bool CatchInputs = false;
+
+    private void Show()
+    {
+        OverlayVisible = true;
+    }
+    private void EnableInputs()
+    {
+        Clear();
+        CatchInputs = true;
+    }
+    private async Task DisableInputsAsync()
+    {
+        CatchInputs = false;
+        await InvokeAsync(() => KeyCodesChanged.InvokeAsync(Keys.ToArray()));
+    }
+    private void Close()
+    {
+        OverlayVisible = false;
+    }
+    public void Clear()
+    {
+        Keys.Clear();
+    }
+
+    private async Task HandleKeyPressedAsync(Keys key)
+    {
+        if (!OverlayVisible || !CatchInputs)
+        {
+            return;
+        }
+
+        Keys.Add(key);
+        if (Keys.Count > 3)
+        {
+            await DisableInputsAsync();
+        }
+        await CallStateUpdateAsync();
+    }
+    private async Task HandleKeyUpAsync(Keys key)
+    {
+        if (!OverlayVisible || !CatchInputs)
+        {
+            return;
+        }
+
+        await DisableInputsAsync();
+        await CallStateUpdateAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        KeyboardHookService.OnKeyPressed += HandleKeyPressedAsync;
+        KeyboardHookService.OnKeyUp += HandleKeyUpAsync;
+    }
+    public void Dispose()
+    {
+        KeyboardHookService.OnKeyPressed -= HandleKeyPressedAsync;
+        KeyboardHookService.OnKeyUp -= HandleKeyUpAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

@@ -1,0 +1,29 @@
+﻿@namespace AudioProxy.Pages
+@inject ConfigService ConfigService
+
+<label class="switch">
+    @if (Value)
+    {
+        <input type="checkbox" @oninput="OnValueChanged" checked />
+    }
+    else
+    {
+        <input type="checkbox" @oninput="OnValueChanged" />
+    }
+    <span class="slider round" />
+</label>
+
+@code{
+    [Parameter]
+    public bool Value { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+
+    private async  Task OnValueChanged(ChangeEventArgs e)
+    {
+        Value = (bool) e.Value;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
+

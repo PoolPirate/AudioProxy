@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "secrets2": {
+      "type": "secrets",
+      "connectionId": "",
+      "suggestion": "true",
+      "ignored": "true"
+    }
+  }
+}

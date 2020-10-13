@@ -1,0 +1,53 @@
+﻿@namespace AudioProxy.Pages
+@page "/Settings/Audio"
+@inject AudioService AudioService
+@layout SettingsLayout
+
+<Panel Class="rightpanelarea">
+    <PanelHeading>
+        Wave Format
+    </PanelHeading>
+    <FlexArea Center="false">
+        <FlexBox>
+            <p>Sample Rate</p>
+            <NumberSelector>
+
+            </NumberSelector>
+        </FlexBox>
+        <FlexBox>
+            <p>Channel Count</p>
+            <NumberSelector>
+
+            </NumberSelector>
+        </FlexBox>
+    </FlexArea>
+</Panel>
+<Panel Class="rightpanelarea">
+    <PanelHeading>
+        Input
+    </PanelHeading>
+    <FlexArea Center="false">
+        <FlexBox>
+            <p>Delay</p>
+            <NumberSelector>
+
+            </NumberSelector>
+        </FlexBox>
+    </FlexArea>
+</Panel>
+<Panel Class="rightpanelarea">
+    <PanelHeading>
+        Output
+    </PanelHeading>
+    <FlexArea Center="false">
+        <FlexBox>
+            <p>Delay</p>
+            <NumberSelector>
+
+            </NumberSelector>
+        </FlexBox>
+    </FlexArea>
+</Panel>
+@code {
+
+}

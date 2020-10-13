@@ -1,0 +1,8 @@
+﻿div {
+    background-color: rgb(10, 12, 12);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 1px;
+    margin-bottom: 20px;
+    border: 1px solid #2c2e2f;
+    border-radius: 4px;
+    box-sizing: border-box;
+}

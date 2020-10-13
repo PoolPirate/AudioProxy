@@ -1,0 +1,19 @@
+﻿table * {
+    color: #b7afa2;
+}
+
+table {
+    width: 100%;
+
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+}
+
+select {
+    background-color: rgb(10, 12, 12);
+    font-size: 14px;
+    outline: none;
+}

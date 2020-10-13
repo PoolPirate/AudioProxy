@@ -1,0 +1,63 @@
+﻿@namespace AudioProxy.Pages
+@inject SoundService SoundService
+
+<div class="searchcontainer">
+    <button class="openbtn" @onclick="() => MenuOpened = !MenuOpened">
+        @(SoundService.GetAllSounds().FirstOrDefault(x => x.Id == Selected)?.Name ?? "None")
+    </button>
+
+    @if (MenuOpened)
+    {
+        <div class="@($"{Class} searchmenu")">
+            <input type="text" placeholder="Search.." value="@SearchText" @oninput="HandleSearchTextInput" />
+            <select @onchange="HandleSelectedAsync" onfocus="this.selectedIndex = -1;">
+                <option index="-1" class="hide"></option>
+                @foreach (var sound in SoundService.GetAllSounds())
+                {
+                    if (!sound.Name.Contains(SearchText))
+                    {
+                        continue;
+                    }
+                    if (sound.Id == Selected)
+                    {
+                        <option selected>@sound.Name</option>
+                    }
+                    else
+                    {
+                        <option>@sound.Name</option>
+                    }
+                }
+            </select>
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter]
+    public string Class { get; set; }
+
+    [Parameter]
+    public string SearchText { get; set; } = "";
+
+    [Parameter]
+    public Guid Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> SelectedChanged { get; set; }
+
+    private bool MenuOpened = false;
+
+    private void HandleSearchTextInput(ChangeEventArgs e)
+    {
+        SearchText = e.Value.ToString();
+        //StateHasChanged();
+    }
+
+    private Task HandleSelectedAsync(ChangeEventArgs e)
+    {
+        MenuOpened = false;
+        Selected = SoundService.GetAllSounds()
+            .First(x => x.Name == e.Value.ToString()).Id;
+        return SelectedChanged.InvokeAsync(Selected);
+    }
+}
