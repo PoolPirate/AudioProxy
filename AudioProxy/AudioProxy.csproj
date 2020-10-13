@@ -2,16 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <UserSecretsId>6db67772-5dc6-4785-b245-b2b33f46cc71</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;0649</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Pages\Shared\Input\KeySelector.razor.css~RF9caaa0e.TMP" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="1.10.0" />
