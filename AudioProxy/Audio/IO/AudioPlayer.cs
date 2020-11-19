@@ -12,10 +12,13 @@ namespace AudioProxy.Audio
     public sealed class AudioPlayer : IDisposable
     {
         private readonly WaveOutEvent WaveOut;
-        private readonly MixingSampleProvider Mixer;
         private readonly ConcurrentDictionary<InputDevice, BufferedWaveProvider> InputBuffers;
         private readonly WaveFormat WaveFormat;
         private readonly KeyboardHookService KeyboardHookService;
+
+        private readonly MixingSampleProvider InputMixer;
+        private readonly MixingSampleProvider SoundMixer;
+        private readonly MixingSampleProvider OutputMixer;
 
         public readonly OutputDevice Device;
 
@@ -28,7 +31,16 @@ namespace AudioProxy.Audio
                 DeviceNumber = AudioDeviceHelper.GetOutputDeviceNumberByName(device.Name),
                 DesiredLatency = delay
             };
-            Mixer = new MixingSampleProvider(WaveFormat)
+
+            InputMixer = new MixingSampleProvider(WaveFormat)
+            {
+                ReadFully = true,
+            };
+            SoundMixer = new MixingSampleProvider(WaveFormat)
+            {
+                ReadFully = true,
+            };
+            OutputMixer = new MixingSampleProvider(WaveFormat)
             {
                 ReadFully = true,
             };
@@ -39,61 +51,51 @@ namespace AudioProxy.Audio
 
         public void Start()
         {
-            WaveOut.Init(Mixer);
+            OutputMixer.AddMixerInput(InputMixer);
+            OutputMixer.AddMixerInput(SoundMixer);
+
+            WaveOut.Init(OutputMixer);
             WaveOut.Play();
         }
         public void Dispose()
         {
-            Mixer.RemoveAllMixerInputs();
+            OutputMixer.RemoveAllMixerInputs();
+            SoundMixer.RemoveAllMixerInputs();
+            InputMixer.RemoveAllMixerInputs();
             WaveOut.Dispose();
         }
-        public void Clear()
+        public void Clear() 
+            => SoundMixer.RemoveAllMixerInputs();
+
+        public void RemoveBuffer(InputDevice inputDevice)
         {
-            foreach(var input in Mixer.MixerInputs.ToArray())
+            if (!InputBuffers.TryRemove(inputDevice, out var buffer))
             {
-                if(input.GetType() == typeof(BufferedWaveProvider)) 
-                    //Ignore, they will be recreated on next mic input anyway
-                {
-                    continue;
-                }
-
-                Mixer.RemoveMixerInput(input);
-
-                if (input is AudioStreamSampleProvider streamSampleProvider)
-                {
-                    streamSampleProvider.Dispose();
-                }
+                return;
             }
+
+            
+            buffer.ClearBuffer();
         }
 
-        public void PlayAudio(IAudioStream audioStream)
+        public void PlaySound(IAudioStream audioStream)
         {
             var sampleProvider = new AudioStreamSampleProvider(audioStream, WaveFormat, Device.SoundsMode, KeyboardHookService);
-            AddMixerInput(sampleProvider);
+            SoundMixer.AddMixerInput(sampleProvider);
         }
-        public void PlayAudio(InputDevice inputDevice, byte[] buffer, int bytesRecorded)
+        public void PlayInput(InputDevice inputDevice, byte[] buffer, int bytesRecorded)
         {
             var inputBuffer = InputBuffers.GetOrAdd(inputDevice, device =>
             {
-                var inputBuffer = new BufferedWaveProvider(Mixer.WaveFormat)
+                var inputBuffer = new BufferedWaveProvider(InputMixer.WaveFormat)
                 {
                     DiscardOnBufferOverflow = true,
                     ReadFully = true
                 };
-                Mixer.AddMixerInput(inputBuffer);
+                InputMixer.AddMixerInput(inputBuffer);
                 return inputBuffer;
             });
             inputBuffer.AddSamples(buffer, 0, bytesRecorded);
         }
-
-        private void AddMixerInput(ISampleProvider input)
-            => Mixer.AddMixerInput(ConvertToRightChannelCount(input));
-
-        private ISampleProvider ConvertToRightChannelCount(ISampleProvider input)
-            => input.WaveFormat.Channels == 1 && Mixer.WaveFormat.Channels == 2
-                ? new MonoToStereoSampleProvider(input)
-                : input.WaveFormat.Channels == 2 && Mixer.WaveFormat.Channels == 1
-                    ? new StereoToMonoSampleProvider(input)
-                    : input;
     }
 }

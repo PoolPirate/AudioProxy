@@ -44,7 +44,7 @@ namespace AudioProxy.Services
                         continue;
                     }
 
-                    player.PlayAudio(inputDevice, buffer, bytesRecorded);
+                    player.PlayInput(inputDevice, buffer, bytesRecorded);
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace AudioProxy.Services
             {
                 foreach (var player in Players)
                 {
-                    player.PlayAudio(audioStream);
+                    player.PlaySound(audioStream);
                 }
             }
         }
