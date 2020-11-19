@@ -16,7 +16,7 @@ namespace AudioProxy
 {
     public class Program
     {
-        private const string ApplicationUrl = "https://localhost:51005";
+        //private const string ApplicationUrl = "https://localhost:51005";
 
         [SuppressMessage("Style", "IDE1006")]
         public static async Task Main(string[] args)
@@ -24,6 +24,7 @@ namespace AudioProxy
             using var host = CreateHost(args);
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
             var configService = host.Services.GetRequiredService<ConfigService>();
+            var config = host.Services.GetRequiredService<IConfiguration>();
             var generalOptions = host.Services.GetRequiredService<GeneralOptions>();
 
             if (!await configService.SetupConfigFilesAsync())
@@ -43,7 +44,9 @@ namespace AudioProxy
             host.Services.RunApplicationServices(Assembly.GetExecutingAssembly());
 
             await host.StartAsync();
-            var browserStartInfo = new ProcessStartInfo(generalOptions.FirstLaunch ? $"{ApplicationUrl}/About" : ApplicationUrl)
+
+            int port = config.GetValue<int>("Port");
+            var browserStartInfo = new ProcessStartInfo(generalOptions.FirstLaunch ? $"https://localhost:{port}/About" : $"https://localhost:{port}")
             {
                 UseShellExecute = true
             };
@@ -58,7 +61,15 @@ namespace AudioProxy
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls(ApplicationUrl);
+
+                    webBuilder.ConfigureKestrel((context, options) =>
+                    {
+                        int port = context.Configuration.GetValue<int>("Port");
+                        options.ListenLocalhost(port, listenOptions =>
+                        {
+                            listenOptions.UseHttps();
+                        });
+                    });
                 })
                 .ConfigureAppConfiguration((context, configBuilder) =>
                 {
