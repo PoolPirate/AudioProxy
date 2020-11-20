@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using AudioProxy.Models;
 using Common.Services;
+using Microsoft.Extensions.Logging;
 
 namespace AudioProxy.Services
 {
@@ -69,13 +70,15 @@ namespace AudioProxy.Services
 
         protected override ValueTask RunAsync()
         {
-            SetHook(HookCallback);
+            var proc = new LowLevelKeyboardProc(HookCallback);
+            SetHook(proc);
 
             while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
             {
                 TranslateMessage(ref Message);
                 DispatchMessage(ref Message);
             }
+            Logger.LogInformation("Message Pump Quit!");
             return default;
         }
 
