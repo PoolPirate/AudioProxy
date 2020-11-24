@@ -61,14 +61,10 @@ namespace AudioProxy
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-
                     webBuilder.ConfigureKestrel((context, options) =>
                     {
                         int port = context.Configuration.GetValue<int>("Port");
-                        options.ListenLocalhost(port, listenOptions =>
-                        {
-                            listenOptions.UseHttps();
-                        });
+                        webBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, $"https://localhost:{port}");
                     });
                 })
                 .ConfigureAppConfiguration((context, configBuilder) =>
