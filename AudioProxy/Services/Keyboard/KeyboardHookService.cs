@@ -44,6 +44,8 @@ namespace AudioProxy.Services
         private static WindowMessage Message;
         private static IntPtr HookId;
 
+        private LowLevelKeyboardProc CallbackDelegate;
+
         private static void SetHook(LowLevelKeyboardProc proc)
         {
             using var curProcess = Process.GetCurrentProcess();
@@ -70,8 +72,8 @@ namespace AudioProxy.Services
 
         protected override ValueTask RunAsync()
         {
-            var proc = new LowLevelKeyboardProc(HookCallback);
-            SetHook(proc);
+            CallbackDelegate = new LowLevelKeyboardProc(HookCallback);
+            SetHook(CallbackDelegate);
 
             while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
             {
