@@ -46,7 +46,7 @@ namespace AudioProxy
             await host.StartAsync();
 
             int port = config.GetValue<int>("Port");
-            var browserStartInfo = new ProcessStartInfo(generalOptions.FirstLaunch ? $"https://localhost:{port}/About" : $"https://localhost:{port}")
+            var browserStartInfo = new ProcessStartInfo(generalOptions.FirstLaunch ? $"http://localhost:{port}/About" : $"http://localhost:{port}")
             {
                 UseShellExecute = true
             };
@@ -64,7 +64,7 @@ namespace AudioProxy
                     webBuilder.ConfigureKestrel((context, options) =>
                     {
                         int port = context.Configuration.GetValue<int>("Port");
-                        webBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, $"https://localhost:{port}");
+                        webBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, $"http://localhost:{port}");
                     });
                 })
                 .ConfigureAppConfiguration((context, configBuilder) =>
