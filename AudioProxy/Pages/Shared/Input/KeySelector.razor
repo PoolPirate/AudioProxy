@@ -28,7 +28,7 @@
             <button class="ctrlbtn" @onclick="Clear">
                 Reset
             </button>
-            <button class="ctrlbtn" @onclick="Close">
+            <button class="ctrlbtn" @onclick="CloseAsync">
                 Done
             </button>
         </div>
@@ -57,14 +57,16 @@
         Clear();
         CatchInputs = true;
     }
-    private async Task DisableInputsAsync()
+    private void DisableInputs()
     {
         CatchInputs = false;
-        await InvokeAsync(() => KeyCodesChanged.InvokeAsync(Keys.ToArray()));
     }
-    private void Close()
+    private Task PushUpdatesAsync()
+        => InvokeAsync(() => KeyCodesChanged.InvokeAsync(Keys.ToArray()));
+    private Task CloseAsync()
     {
         OverlayVisible = false;
+        return PushUpdatesAsync();
     }
     public void Clear()
     {
@@ -81,7 +83,7 @@
         Keys.Add(key);
         if (Keys.Count > 3)
         {
-            await DisableInputsAsync();
+            DisableInputs();
         }
         await CallStateUpdateAsync();
     }
@@ -92,7 +94,7 @@
             return;
         }
 
-        await DisableInputsAsync();
+        DisableInputs();
         await CallStateUpdateAsync();
     }
 

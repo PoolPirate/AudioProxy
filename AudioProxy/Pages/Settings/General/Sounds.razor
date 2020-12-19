@@ -89,7 +89,9 @@
 
     private void TryChangeName(Sound sound, string newName, bool ignoreError = false)
     {
-        if (!NameErrorDict.AddOrSet(sound, !CheckSoundName(newName)) || ignoreError)
+        bool isValidName = CheckSoundName(newName);
+        NameErrorDict[sound] = !isValidName;
+        if (isValidName || ignoreError)
         {
             SoundService.UpdateSound(sound, x => x.Name = newName);
             if (!ignoreError)
@@ -101,7 +103,9 @@
     }
     private void TryChangePath(Sound sound, string newPath, bool ignoreError = false)
     {
-        if (!PathErrorDict.AddOrSet(sound, !CheckAudioFilePath(newPath)) || ignoreError)
+        bool isValidFilePath = CheckAudioFilePath(newPath);
+        PathErrorDict[sound] = !isValidFilePath;
+        if (isValidFilePath || ignoreError)
         {
             SoundService.UpdateSound(sound, x => x.Path = newPath);
             if (!ignoreError)

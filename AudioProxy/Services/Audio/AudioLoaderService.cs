@@ -38,13 +38,7 @@ namespace AudioProxy.Services
             }
         }
 
-        public bool IsValidAudioFile(string path)
-        {
-            if (!File.Exists(path))
-            {
-                return false;
-            }
-            return true;
-        }
+        public bool IsValidAudioFile(string path) 
+            => File.Exists(path);
     }
 }

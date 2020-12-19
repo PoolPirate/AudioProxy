@@ -163,7 +163,9 @@
 
     private void TryChangeName(Profile profile, string newName, bool ignoreError = false)
     {
-        if (!NameErrorDict.AddOrSet(profile, !CheckProfileName(newName)) || ignoreError)
+        bool isValidProfileName = CheckProfileName(newName);
+        NameErrorDict[profile] = !isValidProfileName;
+        if (isValidProfileName || ignoreError)
         {
             ProfileService.UpdateProfile(profile, x => x.Name = newName);
             if (!ignoreError)
