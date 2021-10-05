@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using AudioProxy.Models;
-using AudioProxy.Options;
+﻿using AudioProxy.Models;
 using Common.Services;
+using System.Threading.Tasks;
 
 namespace AudioProxy.Services
 {
@@ -42,7 +39,7 @@ namespace AudioProxy.Services
 
             if (ProfileService.TryGetPressedProfileSounds(pressedKeys, out var profileSounds))
             {
-                foreach(var profileSound in profileSounds)
+                foreach (var profileSound in profileSounds)
                 {
                     await AudioOutputService.PlaySoundAsync(profileSound.SoundId);
                 }

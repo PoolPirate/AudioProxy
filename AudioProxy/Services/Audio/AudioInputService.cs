@@ -1,21 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AudioProxy.Audio;
+﻿using AudioProxy.Audio;
 using AudioProxy.Models;
 using AudioProxy.Options;
 using Common.Services;
 using NAudio.Wave;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AudioProxy.Services
 {
     public sealed class AudioInputService : Service, IDisposable
     {
-        [Inject] private readonly KeyboardHookService KeyboardHookService;
-        [Inject] private readonly DeviceService DeviceService;
-        [Inject] private readonly AudioOutputService AudioOutputService;
-        [Inject] private readonly AudioOptions AudioOptions;
+        [Inject]
+        private readonly DeviceService DeviceService;
+        [Inject]
+        private readonly AudioOutputService AudioOutputService;
+        [Inject]
+        private readonly AudioOptions AudioOptions;
+        [Inject]
+        private readonly KeyboardHookService KeyboardHookService;
 
         private readonly List<AudioRecorder> Recorders;
 

@@ -26,7 +26,7 @@
                 </td>
                 <td>@profile.Sounds.Count</td>
                 <td>
-                    @if (EditingProfile == null || EditingProfile == profile)
+                    @if (EditingProfile is null || EditingProfile == profile)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditProfile(profile)">

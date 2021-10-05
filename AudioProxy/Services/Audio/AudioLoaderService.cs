@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Threading.Tasks;
-using AudioProxy.Audio;
+﻿using AudioProxy.Audio;
 using AudioProxy.Models;
 using Common.Services;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
 
 namespace AudioProxy.Services
 {
@@ -17,7 +15,7 @@ namespace AudioProxy.Services
         {
             var sound = SoundService.GetSoundById(soundId);
 
-            if (sound == null)
+            if (sound is null)
             {
                 Logger.LogError($"Tried to play a sound that does not seem to exist anymore! Id: {soundId}");
                 return null;
@@ -31,14 +29,16 @@ namespace AudioProxy.Services
             switch (sound.Source)
             {
                 case SoundSource.File:
-                    return new FileAudioStream(sound.Path);
+                    return new FileAudioStream(sound.Path, 2);
+                //case SoundSource.Youtube:
+                //    return new RawAudioStream(sound.Path);
                 default:
                     Logger.LogError($"Invalid SoundSource! Id: {sound.Id}");
                     return null;
             }
         }
 
-        public bool IsValidAudioFile(string path) 
+        public bool IsValidAudioFile(string path)
             => File.Exists(path);
     }
 }

@@ -2,6 +2,7 @@
 {
     public enum SoundSource
     {
-        File
+        File,
+        Youtube
     }
 }

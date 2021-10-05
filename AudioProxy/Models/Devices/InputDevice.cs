@@ -1,5 +1,6 @@
-﻿using System;
-using AudioProxy.Helpers;
+﻿using AudioProxy.Helpers;
+using AudioProxy.Services;
+using System;
 
 namespace AudioProxy.Models
 {
@@ -7,7 +8,7 @@ namespace AudioProxy.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = AudioDeviceHelper.GetDefaultInputDevice().ProductName;
-        public DeviceMode Mode { get; set; } = new DeviceMode();
+        public DeviceMode Mode { get; set; }
 
         public InputDevice(string name, DeviceMode mode)
         {
@@ -17,6 +18,7 @@ namespace AudioProxy.Models
         }
         public InputDevice()
         {
+            Mode = new DeviceMode();
         }
     }
 }

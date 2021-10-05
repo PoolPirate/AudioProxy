@@ -1,25 +1,24 @@
-﻿using System;
+﻿using AudioProxy.Services;
+using System;
 using System.Linq;
 
 namespace AudioProxy.Models
 {
     public sealed class DeviceMode
     {
-        public TransferMode TransferMode { get; set; } = TransferMode.Always;
+        private readonly KeyboardHookService KeyboardHookService;
 
+        public TransferMode TransferMode { get; set; } = TransferMode.Always;
         public Keys[] Keys { get; set; } = Array.Empty<Keys>();
 
-        public DeviceMode(TransferMode transferMode, Keys[] keys)
-        {
-            TransferMode = transferMode;
-            Keys = keys;
-        }
         public DeviceMode()
         {
+            TransferMode = TransferMode.Always;
         }
 
         public bool IsFulfilled(Keys[] pressedKeys)
-            => TransferMode switch
+        {
+            return TransferMode switch
             {
                 TransferMode.Always => true,
                 TransferMode.PushToTalk => Keys.Length != 0 && Keys.All(x => pressedKeys.Contains(x)),
@@ -27,5 +26,6 @@ namespace AudioProxy.Models
                 TransferMode.Never => false,
                 _ => true,
             };
+        }
     }
 }

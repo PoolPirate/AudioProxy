@@ -22,7 +22,7 @@
             <tr>
                 <td>@outputDevice.Name</td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == outputDevice.SoundsMode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == outputDevice.SoundsMode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(outputDevice.SoundsMode, outputDevice: outputDevice)">
@@ -32,7 +32,7 @@
 
                 </td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == outputDevice.InputsMode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == outputDevice.InputsMode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(outputDevice.InputsMode, outputDevice: outputDevice)">
@@ -76,7 +76,7 @@
                     </select>
                 </td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingOutputDevice.SoundsMode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == CreatingOutputDevice.SoundsMode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(CreatingOutputDevice.SoundsMode)">
@@ -85,7 +85,7 @@
                     }
                 </td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingOutputDevice.InputsMode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == CreatingOutputDevice.InputsMode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(CreatingOutputDevice.InputsMode)">
@@ -129,7 +129,7 @@
             <tr>
                 <td>@inputDevice.Name</td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == inputDevice.Mode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == inputDevice.Mode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(inputDevice.Mode, inputDevice: inputDevice)">
@@ -173,7 +173,7 @@
                     </select>
                 </td>
                 <td>
-                    @if (EditingDeviceMode == null || EditingDeviceMode == CreatingInputDevice.Mode)
+                    @if (EditingDeviceMode is null || EditingDeviceMode == CreatingInputDevice.Mode)
                     {
                         <button class="imgbtn"
                                 @onclick="() => EditDeviceMode(CreatingInputDevice.Mode)">

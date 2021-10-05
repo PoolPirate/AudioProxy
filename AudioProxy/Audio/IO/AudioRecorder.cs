@@ -1,7 +1,7 @@
-﻿using System;
-using AudioProxy.Helpers;
+﻿using AudioProxy.Helpers;
 using AudioProxy.Models;
 using NAudio.Wave;
+using System;
 
 namespace AudioProxy.Audio
 {

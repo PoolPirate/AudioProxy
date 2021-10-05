@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using AudioProxy.Helpers;
+﻿using AudioProxy.Helpers;
 using AudioProxy.Options;
 using Common.Configuration;
 using Common.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
 namespace AudioProxy.Services

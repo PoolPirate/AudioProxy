@@ -1,108 +1,93 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
+﻿using NAudio.Wave;
+using System;
 using System.Threading.Tasks;
-using NAudio.Wave;
 
 namespace AudioProxy.Audio
 {
-    public sealed class FileAudioStream : IAudioStream, IDisposable
+    public sealed class FileAudioStream : IAudioStream
     {
-        public readonly WaveFormat WaveFormat;
-
         private readonly AudioFileReader AudioReader;
+
+        private Memory<byte> Buffer;
+
         private bool Disposed;
         private bool Finished;
 
-        private int BufferPosition;
-        private int BufferEnd = int.MaxValue;
-        private float[] Buffer;
-        private readonly int BufferSize;
+        private long Position;
 
-        public FileAudioStream(string filePath)
+        public WaveFormat WaveFormat { get; }
+
+        public FileAudioStream(string filePath, int bufferSeconds)
         {
             AudioReader = new AudioFileReader(filePath);
-            //ToDo: Add Resampler using Target Format
-
             WaveFormat = AudioReader.WaveFormat;
-            BufferSize = WaveFormat.SampleRate * WaveFormat.Channels * 2;
-            Buffer = new float[BufferSize];
+            int bufferSize = WaveFormat.SampleRate * WaveFormat.Channels * bufferSeconds;
+            Buffer = new byte[bufferSize];
 
-            int samplesRead = AudioReader.Read(Buffer, 0, BufferSize);
-
-            if (samplesRead < BufferSize)
-            {
-                FinishAtPosition(samplesRead);
-            }
+            Position = -Buffer.Length;
         }
 
-        public int Read(float[] buffer, int offset, int count, int position)
+        public int Read(byte[] buffer, long currentPosition, int offset, int count)
         {
-            int samplesCopied = Advance(count, position);
-            Array.Copy(Buffer, position - BufferPosition, buffer, offset, samplesCopied);
+            LoadNecessaryData(currentPosition, currentPosition + count - Buffer.Length);
 
-            if (samplesCopied < count)
-            {
-                Dispose();
-            }
+            int startIndex = (int)(currentPosition - Position);
+            int bytesToCopy = (int)Math.Min(count, Buffer.Length - startIndex);
 
-            return samplesCopied;
+            Buffer.Slice(startIndex, bytesToCopy).CopyTo(buffer.AsMemory()[offset..]);
+            return bytesToCopy;
         }
-        public int Advance(int count, int position)
+
+        private void LoadNecessaryData(long startPosition, long endPosition)
         {
-            if (position < BufferPosition)
+            if (startPosition < Position)
             {
-                throw new InvalidOperationException("Tried to read Audio Samples that already left the FileAudioStream! Is a AudioPlayer lacking behind?");
+                throw new IndexOutOfRangeException("Tried to read data that has been removed from the Buffer! Is a AudioPlayer running behind?");
+            }
+            if (endPosition <= Position) //No loading necessary
+            {
+                return;
             }
 
-            int endPosition = position + count;
             lock (AudioReader)
             {
-                if (!Finished && !IsCached(endPosition))
+                if (Finished)
                 {
-                    MoveForward();
+                    return;
                 }
-            }
 
-            return Math.Min(count, BufferEnd - position);
+                AdvanceBuffer();
+            }
         }
 
-
-        private void MoveForward()
+        private void AdvanceBuffer()
         {
-            int segmentLenght = BufferSize / 2;
-            Buffer.AsMemory(segmentLenght).CopyTo(Buffer); //Move Second Half of Buffer to the front
-            int samplesRead = AudioReader.Read(Buffer, segmentLenght, segmentLenght);
+            Buffer[(Buffer.Length / 2)..].CopyTo(Buffer); //Copy second half of the Buffer to the front
+            Position += Buffer.Length / 2;
 
-            BufferPosition += segmentLenght;
+            var emptiedSlice = Buffer[(Buffer.Length / 2)..].Span;
+            int bytesRead = AudioReader.Read(emptiedSlice);
 
-            if (samplesRead < segmentLenght)
+            if (bytesRead != Buffer.Length / 2)
             {
-                FinishAtPosition(BufferPosition + segmentLenght + samplesRead);
+                Finished = true;
             }
-        }
-        private void FinishAtPosition(int position)
-        {
-            BufferEnd = position;
-            Finished = true;
+
+            Buffer = Buffer.Slice(0, (Buffer.Length / 2) + bytesRead);
         }
 
-        private bool IsCached(int position)
-            => position <= BufferPosition + Buffer.Length;
-
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             lock (AudioReader)
             {
                 if (Disposed)
                 {
-                    return;
+                    return ValueTask.CompletedTask;
                 }
                 Disposed = true;
             }
 
-            AudioReader.Dispose();
+            return AudioReader.DisposeAsync();
         }
     }
 }

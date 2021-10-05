@@ -1,12 +1,12 @@
-﻿using System;
+﻿using AudioProxy.Models;
+using Common.Services;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using AudioProxy.Models;
-using Common.Services;
-using Microsoft.Extensions.Logging;
 
 namespace AudioProxy.Services
 {
@@ -92,17 +92,17 @@ namespace AudioProxy.Services
                 if (iwParam == WM_KEYDOWN || iwParam == WM_SYSKEYDOWN)
                 {
                     short vkCode = Marshal.ReadInt16(lParam);
-                    _ = Task.Run(() => OnKeyDown?.Invoke((Keys) vkCode));
+                    _ = Task.Run(() => OnKeyDown?.Invoke((Keys)vkCode));
                     if (PressedKeys.TryAdd((Keys)vkCode, true) || PressedKeys.TryUpdate((Keys)vkCode, true, false)) //Make sure to only trigger on the first time this is fired
                     {
-                        _ = Task.Run(() => OnKeyPressed?.Invoke((Keys) vkCode));
+                        _ = Task.Run(() => OnKeyPressed?.Invoke((Keys)vkCode));
                     }
                 }
                 if (iwParam == WM_KEYUP || iwParam == WM_SYSKEYUP)
                 {
                     short vkCode = Marshal.ReadInt16(lParam);
-                    _ = Task.Run(() => OnKeyUp?.Invoke((Keys) vkCode));
-                    PressedKeys.TryUpdate((Keys) vkCode, false, true);
+                    _ = Task.Run(() => OnKeyUp?.Invoke((Keys)vkCode));
+                    PressedKeys.TryUpdate((Keys)vkCode, false, true);
                 }
 
                 return IntPtr.Zero;

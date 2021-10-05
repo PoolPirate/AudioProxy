@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AudioProxy.Models;
+using AudioProxy.Options;
+using Common.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AudioProxy.Models;
-using AudioProxy.Options;
-using Common.Services;
 
 namespace AudioProxy.Services
 {

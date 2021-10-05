@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AudioProxy.Models;
+using AudioProxy.Options;
+using Common.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AudioProxy.Models;
-using AudioProxy.Options;
-using Common.Services;
 
 namespace AudioProxy.Services
 {
@@ -18,8 +18,8 @@ namespace AudioProxy.Services
         {
             lock (HotkeyOptions)
             {
-                return HotkeyOptions.TryGetValue(hotkey, out var keys) 
-                    ? keys 
+                return HotkeyOptions.TryGetValue(hotkey, out var keys)
+                    ? keys
                     : Array.Empty<Keys>();
             }
         }
@@ -40,7 +40,7 @@ namespace AudioProxy.Services
         {
             lock (HotkeyOptions)
             {
-                foreach(var value in HotkeyOptions)
+                foreach (var value in HotkeyOptions)
                 {
                     if (pressedKeys.Length != value.Value.Length ||
                         !pressedKeys.All(x => value.Value.Contains(x)))
