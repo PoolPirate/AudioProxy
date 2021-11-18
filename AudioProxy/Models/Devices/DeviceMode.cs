@@ -6,8 +6,6 @@ namespace AudioProxy.Models
 {
     public sealed class DeviceMode
     {
-        private readonly KeyboardHookService KeyboardHookService;
-
         public TransferMode TransferMode { get; set; } = TransferMode.Always;
         public Keys[] Keys { get; set; } = Array.Empty<Keys>();
 

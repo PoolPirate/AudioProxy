@@ -5,10 +5,11 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace AudioProxy.Audio
 {
-    public sealed class AudioPlayer : IDisposable
+    public sealed class AudioPlayer : IAsyncDisposable
     {
         private readonly WaveOutEvent WaveOut;
         private readonly ConcurrentDictionary<InputDevice, BufferedWaveProvider> InputBuffers;
@@ -19,13 +20,17 @@ namespace AudioProxy.Audio
         private readonly MixingSampleProvider SoundMixer;
         private readonly MixingSampleProvider OutputMixer;
 
+        private readonly ushort ResamplerQuality;
+
         public readonly OutputDevice Device;
 
-        public AudioPlayer(OutputDevice device, int sampleRate, int channelCount, int delay, KeyboardHookService keyboardHookService)
+        public AudioPlayer(OutputDevice device, WaveFormat waveFormat, int delay, ushort resamplerQuality, KeyboardHookService keyboardHookService)
         {
             KeyboardHookService = keyboardHookService;
             Device = device;
-            WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount);
+            WaveFormat = waveFormat;
+            ResamplerQuality = resamplerQuality;
+
             WaveOut = new WaveOutEvent()
             {
                 DeviceNumber = AudioDeviceHelper.GetOutputDeviceNumberByName(device.Name),
@@ -40,12 +45,24 @@ namespace AudioProxy.Audio
             {
                 ReadFully = true,
             };
+
+            SoundMixer.MixerInputEnded += HandleMixerInputEnded;
+
             OutputMixer = new MixingSampleProvider(WaveFormat)
             {
                 ReadFully = true,
             };
 
             InputBuffers = new ConcurrentDictionary<InputDevice, BufferedWaveProvider>();
+        }
+
+        //Async void is used as DisposeAsync should never fail and we are not interested in the output 
+        private async void HandleMixerInputEnded(object sender, SampleProviderEventArgs e)
+        {
+            if (e.SampleProvider is AudioStreamSampleProvider audioStreamSampleProvider)
+            {
+                await audioStreamSampleProvider.DisposeAsync();
+            }
         }
 
         public void Start()
@@ -56,15 +73,23 @@ namespace AudioProxy.Audio
             WaveOut.Init(OutputMixer);
             WaveOut.Play();
         }
-        public void Dispose()
+
+        public Task ClearAsync() 
+            => ClearMixerAsync(SoundMixer);
+
+        private async Task ClearMixerAsync(MixingSampleProvider mixer)
         {
-            OutputMixer.RemoveAllMixerInputs();
+            var inputs = SoundMixer.MixerInputs;
             SoundMixer.RemoveAllMixerInputs();
-            InputMixer.RemoveAllMixerInputs();
-            WaveOut.Dispose();
+
+            foreach (var input in inputs)
+            {
+                if (input is AudioStreamSampleProvider audioStreamSampleProvider)
+                {
+                    await audioStreamSampleProvider.DisposeAsync();
+                }
+            }
         }
-        public void Clear()
-            => SoundMixer.RemoveAllMixerInputs();
 
         public void RemoveBuffer(InputDevice inputDevice)
         {
@@ -77,9 +102,9 @@ namespace AudioProxy.Audio
             buffer.ClearBuffer();
         }
 
-        public void PlaySound(IAudioStream audioStream)
+        public void PlaySound(MultiReaderWaveProvider audioStream)
         {
-            var sampleProvider = new AudioStreamSampleProvider(audioStream, Device.SoundsMode, WaveFormat, KeyboardHookService);
+            var sampleProvider = new AudioStreamSampleProvider(audioStream, Device.SoundsMode, WaveFormat, ResamplerQuality, KeyboardHookService);
             SoundMixer.AddMixerInput(sampleProvider);
         }
         public void PlayInput(InputDevice inputDevice, byte[] buffer, int bytesRecorded)
@@ -95,6 +120,14 @@ namespace AudioProxy.Audio
                 return inputBuffer;
             });
             inputBuffer.AddSamples(buffer, 0, bytesRecorded);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await ClearMixerAsync(OutputMixer);
+            await ClearMixerAsync(SoundMixer);
+            await ClearMixerAsync(InputMixer);
+            WaveOut.Dispose();
         }
     }
 }

@@ -2,20 +2,24 @@
 using AudioProxy.Models;
 using AudioProxy.Options;
 using Common.Services;
+using NAudio.Utils;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace AudioProxy.Services
 {
-    public sealed class AudioOutputService : Service, IDisposable
+    public sealed class AudioOutputService : Service, IAsyncDisposable
     {
         [Inject] private readonly AudioLoaderService AudioLoaderService;
         [Inject] private readonly KeyboardHookService KeyboardHookService;
         [Inject] private readonly DeviceService DeviceService;
         [Inject] private readonly AudioOptions AudioOptions;
 
+        public WaveFormat OutputWaveFormat { get; private set; }
         private readonly List<AudioPlayer> Players;
 
         public AudioOutputService()
@@ -25,12 +29,14 @@ namespace AudioProxy.Services
 
         protected override ValueTask InitializeAsync()
         {
+            OutputWaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(AudioOptions.SampleRate, AudioOptions.ChannelCount);
+
             foreach (var outputDevice in DeviceService.GetAllOutputDevices())
             {
                 AddDevice(outputDevice);
             }
 
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         public void PlayInput(InputDevice inputDevice, byte[] buffer, int bytesRecorded)
@@ -50,7 +56,7 @@ namespace AudioProxy.Services
         }
         public async Task PlaySoundAsync(Guid soundId)
         {
-            var audioStream = AudioLoaderService.GetOrLoadAudioAsync(soundId);
+            var audioStream = await AudioLoaderService.GetOrLoadAudioAsync(soundId);
 
             lock (Players)
             {
@@ -66,35 +72,43 @@ namespace AudioProxy.Services
             {
                 foreach (var player in Players)
                 {
-                    player.Clear();
+                    player.ClearAsync();
                 }
             }
         }
 
         public void AddDevice(OutputDevice outputDevice)
         {
-            var player = new AudioPlayer(outputDevice, AudioOptions.SampleRate, AudioOptions.ChannelCount, AudioOptions.OutputDelay, KeyboardHookService);
+            var player = new AudioPlayer(outputDevice, OutputWaveFormat, AudioOptions.OutputDelay, AudioOptions.ResamplingQuality, KeyboardHookService);
             lock (Players)
             {
                 Players.Add(player);
             }
             player.Start();
         }
-        public void RemoveDevice(OutputDevice outputDevice)
+        public async Task RemoveDeviceAsync(OutputDevice outputDevice)
         {
+            AudioPlayer removedPlayer = null;
+
             lock (Players)
             {
-                var player = Players.Where(x => x.Device == outputDevice).FirstOrDefault();
-                Players.Remove(player);
-                player.Dispose();
+                removedPlayer = Players.Where(x => x.Device == outputDevice).FirstOrDefault();
+                Players.Remove(removedPlayer);
             }
+
+            if (removedPlayer is null)
+            {
+                return;
+            }
+
+            await removedPlayer.DisposeAsync();
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             foreach (var player in Players)
             {
-                player.Dispose();
+                await player.DisposeAsync();
             }
         }
     }

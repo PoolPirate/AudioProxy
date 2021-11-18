@@ -4,6 +4,12 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
+using System.IO;
+using YoutubeExplode.Converter;
+using AudioProxy.Options;
+using YoutubeExplode.Videos;
+using NAudio.Wave;
+using System.Linq;
 
 namespace AudioProxy.Services
 {
@@ -15,26 +21,58 @@ namespace AudioProxy.Services
     {
         private const long YoutubeSampleSize = 24;
 
+        private const string FFMPEGPath = "ffmpeg.exe";
+
         [Inject]
         private readonly YoutubeClient YoutubeClient;
+        [Inject]
+        private readonly GeneralOptions GeneralOptions;
 
-        public async Task<IAudioStream> GetAudioStreamAsync(string url)
+        public async Task<bool> IsValidVideoUrl(string url)
         {
-            var video = await YoutubeClient.Videos.GetAsync(url);
-            var manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(url);
-
-            var streamInfo = manifest.GetAudioOnlyStreams().TryGetWithHighestBitrate();
-
-            if (streamInfo is null)
+            try
             {
-                return null;
+                var video = await YoutubeClient.Videos.GetAsync(url);
+                return video != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async ValueTask<WaveStream> GetAudioStreamAsync(VideoId videoId)
+        {
+            string audioFilePath = GetFileNameForVideoId(videoId);
+
+            if (!File.Exists(audioFilePath))
+            {
+                await DownloadYoutubeVideoAsync(videoId, audioFilePath);
             }
 
-            Logger.LogDebug($"Loading youtube stream: {video.Title} {streamInfo.Bitrate.BitsPerSecond / YoutubeSampleSize} Samples / sec from {streamInfo.Url}");
-            var stream = await YoutubeClient.Videos.Streams.GetAsync(streamInfo);
+            return new Mp3FileReader(audioFilePath);
+        }
 
-            return null;
-            //return new RawAudioStream(stream, streamInfo.Bitrate.BitsPerSecond / YoutubeSampleSize); 
+        private async Task DownloadYoutubeVideoAsync(VideoId videoId, string audioFilePath)
+        {
+            var video = await YoutubeClient.Videos.GetAsync(videoId);
+            var manifest = await YoutubeClient.Videos.Streams.GetManifestAsync(video.Id);
+            var conversionRequest = MakeConversionRequest(audioFilePath);
+
+            Logger.LogInformation($"Downloading Youtube Video : {video.Title}");
+
+            await YoutubeClient.Videos.DownloadAsync(new IStreamInfo[] { manifest.GetAudioOnlyStreams().GetWithHighestBitrate() }, conversionRequest);
+        }
+
+        private ConversionRequest MakeConversionRequest(string outputPath)
+        {
+            return new ConversionRequest(FFMPEGPath, outputPath,
+                new ConversionFormat("mp3"), ConversionPreset.Medium);
+        }
+
+        private string GetFileNameForVideoId(VideoId videoId)
+        {
+            return Path.Combine(GeneralOptions.YoutubeCacheLocation, videoId.Value + ".mp3");
         }
     }
 }

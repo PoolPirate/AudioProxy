@@ -69,13 +69,14 @@ namespace AudioProxy.Services
             _ = OnDevicesChanged?.Invoke();
         }
 
-        public void DeleteOutputDevice(OutputDevice outputDevice)
+        public async Task DeleteOutputDeviceAsync(OutputDevice outputDevice)
         {
             lock (DeviceOptions.Output)
             {
                 DeviceOptions.Output.Remove(outputDevice);
-                AudioOutputService.RemoveDevice(outputDevice);
             }
+
+            await AudioOutputService.RemoveDeviceAsync(outputDevice);
             _ = OnDevicesChanged?.Invoke();
         }
         public void DeleteInputDevice(InputDevice inputDevice)

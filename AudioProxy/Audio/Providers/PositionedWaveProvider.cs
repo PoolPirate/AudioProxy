@@ -4,18 +4,18 @@ namespace AudioProxy.Audio
 {
     public sealed class PositionedWaveProvider : IWaveProvider
     {
-        private readonly IAudioStream SourceStream;
+        private readonly MultiReaderWaveProvider WaveReader;
         private int Position;
-        public WaveFormat WaveFormat => SourceStream.WaveFormat;
+        public WaveFormat WaveFormat => WaveReader.WaveFormat;
 
-        public PositionedWaveProvider(IAudioStream sourceStream)
+        public PositionedWaveProvider(MultiReaderWaveProvider waveReader)
         {
-            SourceStream = sourceStream;
+            WaveReader = waveReader;
         }
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            int samplesRead = SourceStream.Read(buffer, Position, offset, count);
+            int samplesRead = WaveReader.Read(buffer, Position, offset, count);
             Position += samplesRead;
             return samplesRead;
         }

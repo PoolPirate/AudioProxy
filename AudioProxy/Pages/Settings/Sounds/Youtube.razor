@@ -1,8 +1,130 @@
 ﻿@namespace AudioProxy.Pages
 @page "/Settings/Sounds/Youtube"
+@using YoutubeExplode.Videos
 @layout SoundsLayout
+@implements IDisposable
+@inject SoundService SoundService
+@inject AudioLoaderService AudioLoaderService
+@inject AudioOutputService AudioOutputService
 
-<h1>
-    Coming Soon!
-</h1>
+<Panel>
+    <PanelHeading>
+        Videos
+    </PanelHeading>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Url</th>
+            <th></th>
+        </tr>
+        @foreach (var sound in SoundService.GetAllSounds().Where(x => x.Source == SoundSource.Youtube)) //ToDo: Pages!!!
+        {
+            <tr>
+                <td>
+                    <input class="@NameErrorDict.GetValueOrDefault(sound).ToString()" maxlength="20" type="text" value="@sound.Name" 
+                           @oninput="e => TryChangeName(sound, e.Value.ToString())" />
+                </td>
+                <td>
+                    <input class="@PathErrorDict.GetValueOrDefault(sound).ToString()" maxlength="100" type="text" value="@sound.Path"
+                           @oninput="e => TryChangePath(sound, e.Value.ToString())" />
+                </td>
+                <td>
+                    <button class="imgbtn" @onclick="() => AudioOutputService.PlaySoundAsync(sound.Id)">
+                        <img src="/ico/play.png" height="22" />
+                    </button>
+                    <button class="imgbtn" @onclick="() => SoundService.DeleteSound(sound)">
+                        <img src="/ico/delete.png" height="22" />
+                    </button>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td>
+                <input class="@NameErrorDict.GetValueOrDefault(CreatingSound).ToString()" maxlength="20" type="text" value="@CreatingSound.Name"
+                       @oninput="e => TryChangeName(CreatingSound, e.Value.ToString(), true)" />
+            </td>
+            <td>
+                <input class="@PathErrorDict.GetValueOrDefault(CreatingSound).ToString()" maxlength="100" type="text" value="@CreatingSound.Path"
+                       @oninput="e => TryChangePath(CreatingSound, e.Value.ToString(), true)" />
+            </td>
+            <td>
+                <button class="imgbtn" @onclick="TryCreateSound">
+                    <img src="/ico/add.png" height="22" />
+                </button>
+            </td>
+        </tr>
+    </table>
+</Panel>
 
+@code{
+    private Sound CreatingSound = new Sound(SoundSource.Youtube);
+    private Dictionary<Sound, bool> NameErrorDict = new Dictionary<Sound, bool>();
+    private Dictionary<Sound, bool> PathErrorDict = new Dictionary<Sound, bool>();
+
+    private async Task TryCreateSound()
+    {
+        if (!await AudioLoaderService.IsValidSoundPath(CreatingSound.Source, CreatingSound.Path) ||
+            string.IsNullOrWhiteSpace(CreatingSound.Name))
+        {
+            return;
+        }
+
+        SoundService.CreateSound(CreatingSound.Name, SoundSource.Youtube, CreatingSound.Path);
+        CreatingSound.Name = "";
+        CreatingSound.Path = "";
+        NameErrorDict[CreatingSound] = true;
+        PathErrorDict[CreatingSound] = true;
+    }
+
+    private void TryChangeName(Sound sound, string newName, bool ignoreError = false)
+    {
+        bool isValidName = CheckSoundName(newName);
+        NameErrorDict[sound] = !isValidName;
+        if (isValidName || ignoreError)
+        {
+            SoundService.UpdateSound(sound, x => x.Name = newName);
+            if (!ignoreError)
+            {
+                return;
+            }
+        }
+        StateHasChanged();
+    }
+    private async Task TryChangePath(Sound sound, string newPath, bool ignoreError = false)
+    {
+        bool isValidFilePath = await AudioLoaderService.IsValidSoundPath(sound.Source, newPath);
+        PathErrorDict[sound] = !isValidFilePath;
+        if (isValidFilePath || ignoreError)
+        {
+            SoundService.UpdateSound(sound, x => x.Path = VideoId.Parse(newPath).Value);
+            if (!ignoreError)
+            {
+                return;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private bool CheckSoundName(string name)
+        => !string.IsNullOrWhiteSpace(name);
+
+    protected override void OnInitialized()
+    {
+        NameErrorDict.TryAdd(CreatingSound, true);
+        PathErrorDict.TryAdd(CreatingSound, true);
+        SoundService.OnSoundsChanged += CallStateUpdateAsync;
+    }
+
+    public void Dispose()
+    {
+        SoundService.OnSoundsChanged -= CallStateUpdateAsync;
+    }
+
+    private async Task CallStateUpdateAsync()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

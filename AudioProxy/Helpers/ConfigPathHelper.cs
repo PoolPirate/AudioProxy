@@ -3,24 +3,30 @@ using System.IO;
 
 namespace AudioProxy.Helpers
 {
-    public static class ConfigPathHelper
+    public static class PathHelper
     {
-        public static string GetConfigFolderPath()
-            => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AudioProxy");
+        public static string AudioProxyRoot { get; }
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AudioProxy");
+
+        public static string ConfigRoot { get; }
+            = Path.Combine(AudioProxyRoot, "Config");
 
         public static string GetAppsettingsPath()
             => Path.Combine("appsettings.json");
 
         public static string GetDevicesConfigPath()
-            => Path.Combine(GetConfigFolderPath(), "devices.yaml");
+            => Path.Combine(ConfigRoot, "devices.yaml");
 
         public static string GetProfilesConfigPath()
-            => Path.Combine(GetConfigFolderPath(), "profiles.yaml");
+            => Path.Combine(ConfigRoot, "profiles.yaml");
 
         public static string GetSoundsConfigPath()
-            => Path.Combine(GetConfigFolderPath(), "sounds.yaml");
+            => Path.Combine(ConfigRoot, "sounds.yaml");
 
         public static string GetGeneralConfigPath()
-            => Path.Combine(GetConfigFolderPath(), "config.yaml");
+            => Path.Combine(ConfigRoot, "general.yaml");
+
+        public static string GetDefaultYoutubeCacheLocation()
+            => Path.Combine(AudioProxyRoot, "Cache", "Youtube");
     }
 }

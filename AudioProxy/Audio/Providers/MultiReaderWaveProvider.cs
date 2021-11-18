@@ -1,12 +1,13 @@
 ﻿using NAudio.Wave;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace AudioProxy.Audio
 {
-    public sealed class FileAudioStream : IAudioStream
+    public sealed class MultiReaderWaveProvider 
     {
-        private readonly AudioFileReader AudioReader;
+        private readonly Stream WaveStream;
 
         private Memory<byte> Buffer;
 
@@ -17,10 +18,11 @@ namespace AudioProxy.Audio
 
         public WaveFormat WaveFormat { get; }
 
-        public FileAudioStream(string filePath, int bufferSeconds)
+        public MultiReaderWaveProvider(Stream waveStream, WaveFormat format, int bufferSeconds)
         {
-            AudioReader = new AudioFileReader(filePath);
-            WaveFormat = AudioReader.WaveFormat;
+            WaveStream = waveStream;
+            WaveFormat = format;
+
             int bufferSize = WaveFormat.SampleRate * WaveFormat.Channels * bufferSeconds;
             Buffer = new byte[bufferSize];
 
@@ -49,7 +51,7 @@ namespace AudioProxy.Audio
                 return;
             }
 
-            lock (AudioReader)
+            lock (WaveStream)
             {
                 if (Finished)
                 {
@@ -66,7 +68,7 @@ namespace AudioProxy.Audio
             Position += Buffer.Length / 2;
 
             var emptiedSlice = Buffer[(Buffer.Length / 2)..].Span;
-            int bytesRead = AudioReader.Read(emptiedSlice);
+            int bytesRead = WaveStream.Read(emptiedSlice);
 
             if (bytesRead != Buffer.Length / 2)
             {
@@ -78,7 +80,7 @@ namespace AudioProxy.Audio
 
         public ValueTask DisposeAsync()
         {
-            lock (AudioReader)
+            lock (WaveStream)
             {
                 if (Disposed)
                 {
@@ -87,7 +89,7 @@ namespace AudioProxy.Audio
                 Disposed = true;
             }
 
-            return AudioReader.DisposeAsync();
+            return WaveStream.DisposeAsync();
         }
     }
 }

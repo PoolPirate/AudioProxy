@@ -56,13 +56,13 @@
 </Panel>
 
 @code{
-    private Sound CreatingSound = new Sound();
+    private Sound CreatingSound = new Sound(SoundSource.File);
     private Dictionary<Sound, bool> NameErrorDict = new Dictionary<Sound, bool>();
     private Dictionary<Sound, bool> PathErrorDict = new Dictionary<Sound, bool>();
 
-    private void TryCreateSound()
+    private async Task TryCreateSound()
     {
-        if (!AudioLoaderService.IsValidAudioFile(CreatingSound.Path) ||
+        if (!await AudioLoaderService.IsValidSoundPath(CreatingSound.Source, CreatingSound.Path) ||
             string.IsNullOrWhiteSpace(CreatingSound.Name))
         {
             return;
@@ -89,9 +89,9 @@
         }
         StateHasChanged();
     }
-    private void TryChangePath(Sound sound, string newPath, bool ignoreError = false)
+    private async Task TryChangePath(Sound sound, string newPath, bool ignoreError = false)
     {
-        bool isValidFilePath = CheckAudioFilePath(newPath);
+        bool isValidFilePath = await AudioLoaderService.IsValidSoundPath(sound.Source, newPath);
         PathErrorDict[sound] = !isValidFilePath;
         if (isValidFilePath || ignoreError)
         {
@@ -106,8 +106,6 @@
 
     private bool CheckSoundName(string name)
         => !string.IsNullOrWhiteSpace(name);
-    private bool CheckAudioFilePath(string path)
-        => AudioLoaderService.IsValidAudioFile(path);
 
     protected override void OnInitialized()
     {

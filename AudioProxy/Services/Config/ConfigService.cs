@@ -52,24 +52,28 @@ namespace AudioProxy.Services
         {
             try
             {
-                if (!Directory.Exists(ConfigPathHelper.GetConfigFolderPath()))
+                if (!Directory.Exists(PathHelper.AudioProxyRoot))
                 {
-                    Directory.CreateDirectory(ConfigPathHelper.GetConfigFolderPath());
+                    Directory.CreateDirectory(PathHelper.AudioProxyRoot);
+                }
+                if (!Directory.Exists(PathHelper.ConfigRoot))
+                {
+                    Directory.CreateDirectory(PathHelper.ConfigRoot);
                 }
 
-                if (!File.Exists(ConfigPathHelper.GetGeneralConfigPath()))
+                if (!File.Exists(PathHelper.GetGeneralConfigPath()))
                 {
                     await TryWriteGeneralConfigAsync(true);
                 }
-                if (!File.Exists(ConfigPathHelper.GetDevicesConfigPath()))
+                if (!File.Exists(PathHelper.GetDevicesConfigPath()))
                 {
                     await TryWriteDevicesConfigAsync(true);
                 }
-                if (!File.Exists(ConfigPathHelper.GetProfilesConfigPath()))
+                if (!File.Exists(PathHelper.GetProfilesConfigPath()))
                 {
                     await TryWriteProfilesConfigAsync(true);
                 }
-                if (!File.Exists(ConfigPathHelper.GetSoundsConfigPath()))
+                if (!File.Exists(PathHelper.GetSoundsConfigPath()))
                 {
                     await TryWriteSoundsConfigAsync(true);
                 }
@@ -78,7 +82,7 @@ namespace AudioProxy.Services
             }
             catch (Exception ex)
             {
-                Logger.LogCritical(ex, "Could not access config file! Reading or Creating failed!");
+                Console.WriteLine($"Error accessing config files: {ex.StackTrace}");
                 return false;
             }
         }
@@ -104,11 +108,11 @@ namespace AudioProxy.Services
                     [audioOptions.SectionName] = audioOptions,
                     [generalOptions.SectionName] = generalOptions,
                 });
-                await File.WriteAllTextAsync(ConfigPathHelper.GetGeneralConfigPath(), yamlConfig);
+                await File.WriteAllTextAsync(PathHelper.GetGeneralConfigPath(), yamlConfig);
             }
             catch
             {
-                Logger.LogWarning("Failed writing general config!");
+                Console.WriteLine("Failed writing general config!");
             }
         }
         public async Task TryWriteDevicesConfigAsync(bool defaultConfig = false)
@@ -120,11 +124,11 @@ namespace AudioProxy.Services
                 {
                     [config.SectionName] = config
                 });
-                await File.WriteAllTextAsync(ConfigPathHelper.GetDevicesConfigPath(), yamlConfig);
+                await File.WriteAllTextAsync(PathHelper.GetDevicesConfigPath(), yamlConfig);
             }
             catch
             {
-                Logger.LogWarning("Failed writing devices config!");
+                Console.WriteLine("Failed writing devices config!");
             }
         }
         public async Task TryWriteProfilesConfigAsync(bool defaultConfig = false)
@@ -136,11 +140,11 @@ namespace AudioProxy.Services
                 {
                     [config.SectionName] = config
                 });
-                await File.WriteAllTextAsync(ConfigPathHelper.GetProfilesConfigPath(), yamlConfig);
+                await File.WriteAllTextAsync(PathHelper.GetProfilesConfigPath(), yamlConfig);
             }
             catch
             {
-                Logger.LogWarning("Failed writing profiles config!");
+                Console.WriteLine("Failed writing profiles config!");
             }
         }
         public async Task TryWriteSoundsConfigAsync(bool defaultConfig = false)
@@ -152,11 +156,11 @@ namespace AudioProxy.Services
                 {
                     [config.SectionName] = config
                 });
-                await File.WriteAllTextAsync(ConfigPathHelper.GetSoundsConfigPath(), yamlConfig);
+                await File.WriteAllTextAsync(PathHelper.GetSoundsConfigPath(), yamlConfig);
             }
             catch
             {
-                Logger.LogWarning("Failed writing sounds config!");
+                Console.WriteLine("Failed writing sounds config!");
             }
         }
     }

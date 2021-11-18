@@ -69,11 +69,11 @@ namespace AudioProxy
                 })
                 .ConfigureAppConfiguration((context, configBuilder) =>
                 {
-                    configBuilder.AddJsonFile(ConfigPathHelper.GetAppsettingsPath(), false);
-                    configBuilder.AddYamlFile(ConfigPathHelper.GetDevicesConfigPath(), true);
-                    configBuilder.AddYamlFile(ConfigPathHelper.GetProfilesConfigPath(), true);
-                    configBuilder.AddYamlFile(ConfigPathHelper.GetSoundsConfigPath(), true);
-                    configBuilder.AddYamlFile(ConfigPathHelper.GetGeneralConfigPath(), true);
+                    configBuilder.AddJsonFile(PathHelper.GetAppsettingsPath(), false);
+                    configBuilder.AddYamlFile(PathHelper.GetDevicesConfigPath(), true);
+                    configBuilder.AddYamlFile(PathHelper.GetProfilesConfigPath(), true);
+                    configBuilder.AddYamlFile(PathHelper.GetSoundsConfigPath(), true);
+                    configBuilder.AddYamlFile(PathHelper.GetGeneralConfigPath(), true);
                 })
                 .ConfigureLogging((context, loggerBuilder) =>
                 {

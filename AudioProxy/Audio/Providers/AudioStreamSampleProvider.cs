@@ -8,28 +8,33 @@ namespace AudioProxy.Audio
 {
     public sealed class AudioStreamSampleProvider : ISampleProvider, IAsyncDisposable
     {
-        private readonly IAudioStream AudioStream;
+        private readonly MultiReaderWaveProvider WaveReader;
         private readonly DeviceMode ActivationMode;
         private readonly KeyboardHookService KeyboardHookService;
 
+        private readonly MediaFoundationResampler Resampler;
         public readonly ISampleProvider SampleProvider;
 
         public WaveFormat WaveFormat { get; set; }
 
-        public AudioStreamSampleProvider(IAudioStream stream, DeviceMode activationMode, WaveFormat waveFormat, KeyboardHookService keyboardHookService)
+        public AudioStreamSampleProvider(MultiReaderWaveProvider waveReader, DeviceMode activationMode, WaveFormat waveFormat, int resamplerQuality, KeyboardHookService keyboardHookService)
         {
-            AudioStream = stream;
+            WaveReader = waveReader;
             WaveFormat = waveFormat;
             ActivationMode = activationMode;
             KeyboardHookService = keyboardHookService;
 
-            IWaveProvider waveProvider = new PositionedWaveProvider(stream);
+            IWaveProvider waveProvider = new PositionedWaveProvider(WaveReader);
 
-            if (waveFormat.SampleRate != stream.WaveFormat.SampleRate || 
-                waveFormat.BitsPerSample != stream.WaveFormat.BitsPerSample || 
-                waveFormat.Channels != stream.WaveFormat.Channels)
+            if (waveFormat.SampleRate != waveProvider.WaveFormat.SampleRate || 
+                waveFormat.BitsPerSample != waveProvider.WaveFormat.BitsPerSample || 
+                waveFormat.Channels != waveProvider.WaveFormat.Channels)
             {
-                waveProvider = new MediaFoundationResampler(waveProvider, waveFormat);
+                Resampler = new MediaFoundationResampler(waveProvider, waveFormat)
+                {
+                    ResamplerQuality = resamplerQuality,
+                };
+                waveProvider = Resampler;
             }
 
             SampleProvider = waveProvider.ToSampleProvider();
@@ -50,7 +55,12 @@ namespace AudioProxy.Audio
 
         public ValueTask DisposeAsync()
         {
-            return AudioStream.DisposeAsync();
+            if (Resampler is not null)
+            {
+                Resampler.Dispose();
+            }
+
+            return WaveReader.DisposeAsync();
         }
     }
 }
