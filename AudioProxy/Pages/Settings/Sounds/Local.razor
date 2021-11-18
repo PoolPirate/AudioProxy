@@ -1,6 +1,6 @@
 ﻿@namespace AudioProxy.Pages
-@page "/Settings/Sounds"
-@layout SettingsLayout
+@page "/Settings/Sounds/Local"
+@layout SoundsLayout
 @implements IDisposable
 @inject SoundService SoundService
 @inject AudioLoaderService AudioLoaderService
@@ -53,18 +53,6 @@
             </td>
         </tr>
     </table>
-</Panel>
-<Panel>
-    <PanelHeading>
-        Youtube
-    </PanelHeading>
-    <h2>Not supported yet!</h2>
-</Panel>
-<Panel>
-    <PanelHeading>
-        Spotify
-    </PanelHeading>
-    <h2>Not supported yet!</h2>
 </Panel>
 
 @code{

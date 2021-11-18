@@ -41,13 +41,13 @@
                     }
                 </td>
                 <td>
-                    <button class="imgbtn" @onclick="() =>
+                    <button class="imgbtn" @onclick="async () =>
                                                      {
                                                          if (EditingDeviceMode == outputDevice.SoundsMode || EditingDeviceMode == outputDevice.InputsMode)
                                                          {
                                                              EditingDeviceMode = null;
                                                          }
-                                                         DeviceService.DeleteOutputDevice(outputDevice);
+                                                         await DeviceService.DeleteOutputDeviceAsync(outputDevice);
                                                      }">
                         <img src="/ico/delete.png" height="22" />
                     </button>

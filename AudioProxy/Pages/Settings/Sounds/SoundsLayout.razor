@@ -1,5 +1,5 @@
 ﻿@namespace AudioProxy.Pages
-@inherits LayoutComponentBase
+@inherits SettingsLayout
 
 <nav class="navpanelsarea">
     <Panel Class="pagespanel">
@@ -26,7 +26,7 @@
             <NavLnk HRef="/Settings/Devices">
                 Devices
             </NavLnk>
-            <NavLnk HRef="/Settings/Sounds">
+            <NavLnk HRef="/Settings/Sounds" Match="NavLinkMatch.Prefix">
                 Sounds
             </NavLnk>
             <NavLnk HRef="/Settings/Profiles">
@@ -37,18 +37,21 @@
             </NavLnk>
         </NavBox>
     </Panel>
-
-    @*<Panel Class="pagespanel">
+    <Panel Class="pagespanel">
         <PanelHeading>
-        Advanced Settings
+            Source Type
         </PanelHeading>
         <NavBox>
-        <NavLnk HRef="/Settings/Audio">
-        Audio & Quality
-        </NavLnk>
+            <NavLnk HRef="/Settings/Sounds/Local">
+                Local
+            </NavLnk>
+            <NavLnk HRef="/Settings/Sounds/Youtube">
+                Youtube
+            </NavLnk>
         </NavBox>
-        </Panel>*@
+    </Panel>
 </nav>
+
 <div class="rightpanelarea">
     @Body
 </div>

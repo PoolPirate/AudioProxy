@@ -1,0 +1,11 @@
+﻿@page "/Settings/Sounds"
+@namespace AudioProxy.Pages
+@inject NavigationManager NavManager
+
+@code{ 
+    
+    protected override void OnAfterRender(bool firstRender) 
+    {
+        NavManager.NavigateTo("/Settings/Sounds/Local");
+    }
+}
