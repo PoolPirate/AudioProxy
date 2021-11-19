@@ -43,7 +43,7 @@ namespace AudioProxy.Audio
             };
             SoundMixer = new MixingSampleProvider(WaveFormat)
             {
-                ReadFully = true,
+                ReadFully = true,           
             };
 
             SoundMixer.MixerInputEnded += HandleMixerInputEnded;

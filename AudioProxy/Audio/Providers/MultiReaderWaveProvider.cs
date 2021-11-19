@@ -1,13 +1,15 @@
 ﻿using NAudio.Wave;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace AudioProxy.Audio
 {
-    public sealed class MultiReaderWaveProvider 
+    public sealed class MultiReaderWaveProvider
     {
         private readonly Stream WaveStream;
+        private readonly object AdvanceLock;
 
         private Memory<byte> Buffer;
 
@@ -20,10 +22,11 @@ namespace AudioProxy.Audio
 
         public MultiReaderWaveProvider(Stream waveStream, WaveFormat format, int bufferSeconds)
         {
+            AdvanceLock = new object();
             WaveStream = waveStream;
             WaveFormat = format;
 
-            int bufferSize = WaveFormat.SampleRate * WaveFormat.Channels * bufferSeconds;
+            int bufferSize = WaveFormat.AverageBytesPerSecond * bufferSeconds;
             Buffer = new byte[bufferSize];
 
             Position = -Buffer.Length;
@@ -31,28 +34,43 @@ namespace AudioProxy.Audio
 
         public int Read(byte[] buffer, long currentPosition, int offset, int count)
         {
-            LoadNecessaryData(currentPosition, currentPosition + count - Buffer.Length);
+            count = Math.Min(count, Buffer.Length);
+
+            LoadNecessaryData(currentPosition, currentPosition + count);
 
             int startIndex = (int)(currentPosition - Position);
+            int skippedBytes = 0;
+
+            if (startIndex < 0)
+            {
+                skippedBytes = -startIndex;
+                startIndex = 0;
+                Debug.Print($"Warning: Player running behind. Skipping {skippedBytes} Bytes");
+            }
+
             int bytesToCopy = (int)Math.Min(count, Buffer.Length - startIndex);
 
             Buffer.Slice(startIndex, bytesToCopy).CopyTo(buffer.AsMemory()[offset..]);
-            return bytesToCopy;
+            return bytesToCopy + skippedBytes;
         }
 
         private void LoadNecessaryData(long startPosition, long endPosition)
         {
-            if (startPosition < Position)
+            if (startPosition == Position)
             {
-                throw new IndexOutOfRangeException("Tried to read data that has been removed from the Buffer! Is a AudioPlayer running behind?");
-            }
-            if (endPosition <= Position) //No loading necessary
-            {
-                return;
+
             }
 
             lock (WaveStream)
             {
+                if (startPosition < Position)
+                {
+                    throw new IndexOutOfRangeException("Tried to read data that has been removed from the Buffer! Is a AudioPlayer running behind?");
+                }
+                if (endPosition <= Position + Buffer.Length) //No loading necessary
+                {
+                    return;
+                }
                 if (Finished)
                 {
                     return;

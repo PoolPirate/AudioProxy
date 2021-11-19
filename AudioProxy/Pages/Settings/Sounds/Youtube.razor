@@ -21,11 +21,11 @@
         {
             <tr>
                 <td>
-                    <input class="@NameErrorDict.GetValueOrDefault(sound).ToString()" maxlength="20" type="text" value="@sound.Name" 
+                    <input class="thin @NameErrorDict.GetValueOrDefault(sound).ToString()" maxlength="20" type="text" value="@sound.Name" 
                            @oninput="e => TryChangeName(sound, e.Value.ToString())" />
                 </td>
                 <td>
-                    <input class="@PathErrorDict.GetValueOrDefault(sound).ToString()" maxlength="100" type="text" value="@sound.Path"
+                    <input class="wide @PathErrorDict.GetValueOrDefault(sound).ToString()" maxlength="100" type="text" value="@sound.Path"
                            @oninput="e => TryChangePath(sound, e.Value.ToString())" />
                 </td>
                 <td>
@@ -96,7 +96,9 @@
         PathErrorDict[sound] = !isValidFilePath;
         if (isValidFilePath || ignoreError)
         {
-            SoundService.UpdateSound(sound, x => x.Path = VideoId.Parse(newPath).Value);
+            
+
+            SoundService.UpdateSound(sound, x => x.Path = VideoId.TryParse(newPath)?.Value ?? newPath);
             if (!ignoreError)
             {
                 return;

@@ -23,6 +23,14 @@ input {
     text-align: center;
 }
 
+.wide {
+    width: 40vw;
+}
+
+.thin {
+    width: 20vw;
+}
+
 .True {
     border-color: darkred;
 }
