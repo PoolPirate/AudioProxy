@@ -45,12 +45,16 @@ namespace AudioProxy
 
             await host.StartAsync();
 
-            int port = config.GetValue<int>("Port");
-            var browserStartInfo = new ProcessStartInfo(generalOptions.FirstLaunch ? $"http://localhost:{port}/About" : $"http://localhost:{port}")
+            if (generalOptions.FirstLaunch)
             {
-                UseShellExecute = true
-            };
-            Process.Start(browserStartInfo);
+                var contextMenuService = host.Services.GetRequiredService<ContextMenuService>();
+
+                contextMenuService.ShowNotification("You can find me down here!",
+                    "Double click the Tray Icon to open AudioProxy in your Browser");
+            }
+
+            int port = config.GetValue<int>("Port");
+            BrowserHelper.RunAudioProxyInBrowser(generalOptions.FirstLaunch, port);
             generalOptions.FirstLaunch = false;
             await configService.TryWriteGeneralConfigAsync();
             await host.WaitForShutdownAsync();

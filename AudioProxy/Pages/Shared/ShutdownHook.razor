@@ -1,0 +1,24 @@
+﻿@namespace AudioProxy.Pages
+@using Microsoft.JSInterop;
+@using Microsoft.Extensions.Hosting;
+@using System.Threading;
+@inject IHostApplicationLifetime HostLifetime;
+@inject IJSRuntime JSRuntime;
+@implements IDisposable
+
+@code {
+    private CancellationTokenRegistration ShutdownRegistration;
+
+    protected override void OnInitialized()
+    {
+        ShutdownRegistration = HostLifetime.ApplicationStopping.Register(async () =>
+        {
+            await JSRuntime.InvokeVoidAsync("window.close");
+        });
+    }
+
+    public void Dispose()
+    {
+        ShutdownRegistration.Dispose();
+    }
+}

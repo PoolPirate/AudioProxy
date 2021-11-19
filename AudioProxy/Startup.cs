@@ -1,3 +1,4 @@
+using AudioProxy.Services;
 using Common.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using System.Windows.Forms;
 using YoutubeExplode;
 
 namespace AudioProxy
@@ -26,6 +28,7 @@ namespace AudioProxy
             services.AddServerSideBlazor();
             services.AddApplication(Configuration, Assembly.GetExecutingAssembly());
             services.AddSingleton<YoutubeClient>();
+            services.AddSingleton<AudioProxyContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,5 +1,6 @@
 ﻿using AudioProxy.Models;
 using Common.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -40,6 +41,9 @@ namespace AudioProxy.Services
         [DllImport("user32.dll")]
         private static extern IntPtr DispatchMessage([In] ref WindowMessage lpMsg);
 
+        [Inject]
+        private readonly IHostApplicationLifetime HostLifetime;
+
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
         private static WindowMessage Message;
         private static IntPtr HookId;
@@ -75,13 +79,13 @@ namespace AudioProxy.Services
             CallbackDelegate = new LowLevelKeyboardProc(HookCallback);
             SetHook(CallbackDelegate);
 
-            while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
-            {
-                TranslateMessage(ref Message);
-                DispatchMessage(ref Message);
-            }
+            //while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
+            //{
+            //    TranslateMessage(ref Message);
+            //    DispatchMessage(ref Message);
+            //}
             Logger.LogInformation("Message Pump Quit!");
-            return default;
+            return ValueTask.CompletedTask;
         }
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
