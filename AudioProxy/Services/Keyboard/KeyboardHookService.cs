@@ -79,11 +79,11 @@ namespace AudioProxy.Services
             CallbackDelegate = new LowLevelKeyboardProc(HookCallback);
             SetHook(CallbackDelegate);
 
-            //while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
-            //{
-            //    TranslateMessage(ref Message);
-            //    DispatchMessage(ref Message);
-            //}
+            while (!GetMessage(out Message, IntPtr.Zero, 0, 0))
+            {
+                TranslateMessage(ref Message);
+                DispatchMessage(ref Message);
+            }
             Logger.LogInformation("Message Pump Quit!");
             return ValueTask.CompletedTask;
         }
