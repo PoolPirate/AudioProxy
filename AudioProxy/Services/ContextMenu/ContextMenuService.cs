@@ -111,7 +111,8 @@ namespace AudioProxy.Services
 
         private async void CloseAppItem_Click(object sender, EventArgs e)
         {
-            await Host.StopAsync(TimeSpan.FromSeconds(3));
+            var timeout = TimeSpan.FromSeconds(3);
+            await Host.StopAsync(timeout).WaitAsync(timeout);
             Environment.Exit(0);
         }
 
