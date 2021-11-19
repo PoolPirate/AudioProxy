@@ -72,7 +72,7 @@ namespace AudioProxy.Services
             {
                 ContextMenuStrip = ContextMenu,
                 Text = "AudioProxy",
-                Icon = new Icon("C://Users//elias//Downloads//kek.ico"),
+                Icon = new Icon("cable.ico"),
             };
 
             TrayIcon.DoubleClick += TrayIcon_DoubleClick;
